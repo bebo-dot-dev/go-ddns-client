@@ -1,0 +1,12 @@
+[Unit]
+Description=Go Dynamic DNS Client Service
+After=network.target
+
+[Service]
+ExecStart=/path/to/go-ddns-client -cfg=/path/to/serviceConfig.json
+Restart=always
+KillMode=process
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target

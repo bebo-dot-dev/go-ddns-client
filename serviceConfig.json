@@ -1,0 +1,22 @@
+{
+    "updateInterval": "5s",
+    "router": {
+        "routerType": "BTSmartHub2",
+        "userName": "admin",
+        "password": "password",
+        "loginUrl": "http://192.168.1.254/login.cgi",
+        "ipDetailsUrl": "http://192.168.1.254/nonAuth/wan_conn.xml"
+    },
+    "services": [
+        {
+            "serviceType": "Namecheap",
+            "targetDomain": "example1.com",
+            "password": "737da37e886740df94e0300e1ea55e0f"
+        },
+        {
+            "serviceType": "Namecheap",
+            "targetDomain": "example2.com",
+            "password": "0de94176d7994a0093ca60e63f66c1da"
+        }
+    ]
+}
