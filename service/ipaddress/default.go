@@ -1,4 +1,4 @@
-package publicIPv4Provider
+package ipaddress
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 )
 
 //Describes the interface of a type able to return the public facing IP address in use where this code is running
-type PublicIPAddressProvider interface {
+type AddressProvider interface {
 	//returns the name of an IPv4 public IP address provider
 	ProviderName() string
 	//returns the public IP address
@@ -18,22 +18,22 @@ type PublicIPAddressProvider interface {
 }
 
 /*
-The DefaultIPAddressProvider type that has the ability to talk to api.ipify.org to retrieve a public IPv4 address
+The Default type that has the ability to talk to api.ipify.org to retrieve a public IPv4 address
 This type acts as a fallback in the event of there being no configured json router section publicIPv4Provider
 
 request url: https://api.ipify.org
 
 sample json response: 255.255.255.255
 */
-type DefaultIPAddressProvider struct{}
+type Default struct{}
 
 //returns the name of this IPv4 public IP address provider
-func (ipProvider DefaultIPAddressProvider) ProviderName() string {
+func (ipProvider Default) ProviderName() string {
 	return "api.ipify.org public IPV4 address provider"
 }
 
 //performs a HTTP request to https://api.ipify.org to retrieve and return the public IP address
-func (ipProvider DefaultIPAddressProvider) GetPublicIPAddress() (net.IP, error) {
+func (ipProvider Default) GetPublicIPAddress() (net.IP, error) {
 	response, err := http.Get("https://api.ipify.org")
 	if err != nil {
 		return nil, err
@@ -59,6 +59,6 @@ func (ipProvider DefaultIPAddressProvider) GetPublicIPAddress() (net.IP, error) 
 }
 
 //logs the public IP address
-func (ipProvider DefaultIPAddressProvider) LogPublicIPAddress(ip net.IP) {
+func (ipProvider Default) LogPublicIPAddress(ip net.IP) {
 	log.Printf("The %s reports the public IPv4 as %s", ipProvider.ProviderName(), ip)
 }

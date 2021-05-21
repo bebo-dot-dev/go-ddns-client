@@ -1,9 +1,9 @@
 package main
 
 import (
-	"ddns-client/service"
-	"ddns-client/service/configuration"
 	"flag"
+	"go-ddns-client/service"
+	"go-ddns-client/service/config"
 	"log"
 	"os"
 	"time"
@@ -11,13 +11,13 @@ import (
 
 var (
 	configFilename = ""
-	config         = &configuration.Configuration{}
+	cfg         = &config.Configuration{}
 )
 
 //application entry point
 func main() {
 	configFilename = readFlags()
-	configuration.Load(configFilename, config)
+	config.Load(configFilename, cfg)
 	startDynamicDnsClientTicker()
 }
 
@@ -37,7 +37,7 @@ func readFlags() string {
 
 //starts the application timed DNS client ticker to perform dynamic DNS updates on the configured config.UpdateInterval
 func startDynamicDnsClientTicker() {
-	duration, err := time.ParseDuration(config.UpdateInterval)
+	duration, err := time.ParseDuration(cfg.UpdateInterval)
 	if err != nil {
 		//update interval parse error
 		log.Panic(err)
@@ -47,8 +47,8 @@ func startDynamicDnsClientTicker() {
 	for {
 		select {
 		case _ = <-ticker.C:
-			configuration.Load(configFilename, config)
-			err = service.PerformDDNSActions(config)
+			config.Load(configFilename, cfg)
+			err = service.PerformDDNSActions(cfg)
 			if err != nil {
 				log.Println(err)
 			}

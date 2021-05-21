@@ -1,4 +1,4 @@
-package ddnsClientProvider
+package ddns
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ request url: https://www.duckdns.org/update?domains={YOURVALUE}&token={YOURVALUE
 sample response:
 OK
 */
-type DuckDNSClient DynamicDnsClient
+type DuckDNSClient Client
 
 //returns the name of this dynamic dns client
 func (client DuckDNSClient) Name() string {

@@ -1,4 +1,4 @@
-package ddnsClientProvider
+package ddns
 
 import (
 	"errors"
@@ -18,7 +18,7 @@ request url: https://username:password@dynupdate.no-ip.com/nic/update?hostname=m
 sample response:
 nochg 192.0.2.25
 */
-type NoIPClient DynamicDnsClient
+type NoIPClient Client
 
 //returns the name of this dynamic dns client
 func (client NoIPClient) Name() string {

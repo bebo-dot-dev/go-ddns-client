@@ -1,7 +1,7 @@
-package ddnsClientProvider
+package ddns
 
 import (
-	"ddns-client/service/configuration"
+	"go-ddns-client/service/config"
 	"io"
 	"log"
 	"net"
@@ -19,8 +19,8 @@ type IDynamicDnsClient interface {
 	LogIPAddressUpdate()
 }
 
-type DynamicDnsClient struct {
-	ServiceConfig configuration.ServiceConfiguration
+type Client struct {
+	ServiceConfig config.ServiceConfiguration
 }
 
 //performs a HTTP GET request and returns the response

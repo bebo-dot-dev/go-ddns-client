@@ -1,9 +1,9 @@
 package service
 
 import (
-	"ddns-client/service/configuration"
-	"ddns-client/service/ddnsClientProvider"
-	"ddns-client/service/publicIPv4Provider"
+	"go-ddns-client/service/config"
+	"go-ddns-client/service/ddns"
+	"go-ddns-client/service/ipaddress"
 	"log"
 	"net"
 )
@@ -14,7 +14,7 @@ var (
 )
 
 //retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddress actions as required
-func PerformDDNSActions(config *configuration.Configuration) error {
+func PerformDDNSActions(config *config.Configuration) error {
 	var err error
 
 	if config.Services == nil {
@@ -33,21 +33,21 @@ func PerformDDNSActions(config *configuration.Configuration) error {
 			switch serviceConfig.ServiceType {
 			case "DuckDNS":
 				{
-					err = updateIpAddress(currentPublicIpAddr, ddnsClientProvider.DuckDNSClient{ServiceConfig: serviceConfig})
+					err = updateIpAddress(currentPublicIpAddr, ddns.DuckDNSClient{ServiceConfig: serviceConfig})
 					if err != nil {
 						break
 					}
 				}
 			case "Namecheap":
 				{
-					err = updateIpAddress(currentPublicIpAddr, ddnsClientProvider.NamecheapClient{ServiceConfig: serviceConfig})
+					err = updateIpAddress(currentPublicIpAddr, ddns.NamecheapClient{ServiceConfig: serviceConfig})
 					if err != nil {
 						break
 					}
 				}
 			case "NoIP":
 				{
-					err = updateIpAddress(currentPublicIpAddr, ddnsClientProvider.NoIPClient{ServiceConfig: serviceConfig})
+					err = updateIpAddress(currentPublicIpAddr, ddns.NoIPClient{ServiceConfig: serviceConfig})
 					if err != nil {
 						break
 					}
@@ -66,21 +66,21 @@ func PerformDDNSActions(config *configuration.Configuration) error {
 	return err
 }
 
-//returns a publicIPv4Provider.PublicIPAddressProvider for the supplied routerConfig *configuration.RouterConfiguration
-func getPublicIpAddressProvider(routerConfig *configuration.RouterConfiguration) publicIPv4Provider.PublicIPAddressProvider {
-	var ipAddressProvider publicIPv4Provider.PublicIPAddressProvider
+//returns a ipaddress.AddressProvider for the supplied routerConfig *config.RouterConfiguration
+func getPublicIpAddressProvider(routerConfig *config.RouterConfiguration) ipaddress.AddressProvider {
+	var ipAddressProvider ipaddress.AddressProvider
 	if routerConfig != nil && routerConfig.RouterType != "" {
 		switch routerConfig.RouterType {
 		case "BTSmartHub2":
-			ipAddressProvider = publicIPv4Provider.BTSmartHub2IPAddressProvider{Config: routerConfig}
+			ipAddressProvider = ipaddress.BTSmartHub2{Config: routerConfig}
 		}
 	} else {
-		ipAddressProvider = publicIPv4Provider.DefaultIPAddressProvider{}
+		ipAddressProvider = ipaddress.Default{}
 	}
 	return ipAddressProvider
 }
 
 //performs an IPv4 ip address update using the supplied publicIpAddress and client
-func updateIpAddress(publicIpAddress net.IP, client ddnsClientProvider.IDynamicDnsClient) error {
+func updateIpAddress(publicIpAddress net.IP, client ddns.IDynamicDnsClient) error {
 	return client.UpdateIPAddress(publicIpAddress)
 }

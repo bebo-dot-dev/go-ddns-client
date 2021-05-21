@@ -1,10 +1,10 @@
-package publicIPv4Provider
+package ipaddress
 
 import (
-	"ddns-client/service/configuration"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"go-ddns-client/service/config"
 	"io"
 	"log"
 	"net"
@@ -14,7 +14,7 @@ import (
 )
 
 /*
-The BTSmartHub2IPAddressProvider type that has the ability to talk to a BTSmartHub2 to retrieve a public IPv4 address
+The BTSmartHub2 type that has the ability to talk to a BT Smart Hub 2 to retrieve a public IPv4 address
 
 request url: http://192.168.1.254/nonAuth/wan_conn.xml
 
@@ -72,8 +72,8 @@ null]" />
     <!--END for home page, login lock-->
 </status>
 */
-type BTSmartHub2IPAddressProvider struct {
-	Config *configuration.RouterConfiguration
+type BTSmartHub2 struct {
+	Config *config.RouterConfiguration
 }
 
 //models the xml response returned by a BT smart hub 2 /nonAuth/wan_conn.xml request
@@ -149,12 +149,12 @@ type RouterStatus struct {
 }
 
 //returns the name of this IPv4 public IP address provider
-func (ipProvider BTSmartHub2IPAddressProvider) ProviderName() string {
+func (ipProvider BTSmartHub2) ProviderName() string {
 	return "BTSmartHub2 public IPV4 address provider"
 }
 
 //performs a HTTP request to a BT smart hub 2 router to retrieve and return the public IP address
-func (ipProvider BTSmartHub2IPAddressProvider) GetPublicIPAddress() (net.IP, error) {
+func (ipProvider BTSmartHub2) GetPublicIPAddress() (net.IP, error) {
 	if ipProvider.Config == nil {
 		return nil, errors.New("config is nil and it needs to be supplied")
 	}
@@ -183,7 +183,7 @@ func (ipProvider BTSmartHub2IPAddressProvider) GetPublicIPAddress() (net.IP, err
 }
 
 //logs the public IP address
-func (ipProvider BTSmartHub2IPAddressProvider) LogPublicIPAddress(ip net.IP) {
+func (ipProvider BTSmartHub2) LogPublicIPAddress(ip net.IP) {
 	log.Printf("The %s reports the public IPv4 as %s", ipProvider.ProviderName(), ip)
 }
 

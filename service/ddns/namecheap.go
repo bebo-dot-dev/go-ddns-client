@@ -1,4 +1,4 @@
-package ddnsClientProvider
+package ddns
 
 import (
 	"encoding/xml"
@@ -35,7 +35,7 @@ sample response xml:
     <debug><![CDATA[]]></debug>
 </interface-response>
 */
-type NamecheapClient DynamicDnsClient
+type NamecheapClient Client
 
 type NamecheapXmlResponse struct {
 	XMLName  xml.Name `xml:"interface-response"`
