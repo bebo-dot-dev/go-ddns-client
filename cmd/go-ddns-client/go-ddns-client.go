@@ -14,14 +14,10 @@ var (
 	config         = &configuration.Configuration{}
 )
 
-//application init point
-func init() {
-	configFilename = readFlags()
-	configuration.Load(configFilename, config)
-}
-
 //application entry point
 func main() {
+	configFilename = readFlags()
+	configuration.Load(configFilename, config)
 	startDynamicDnsClientTicker()
 }
 
