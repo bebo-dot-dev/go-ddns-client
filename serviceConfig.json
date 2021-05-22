@@ -27,5 +27,14 @@
             "port": 53,
             "ttl": 600
         }
-    ]
+    ],
+    "notifications": {
+        "sipgateSMS": {
+            "enabled": false,
+            "tokenId": "sipgate token name",
+            "token": "sipgate token secret",
+            "smsId": "s0",
+            "recipient": "441234567890"
+        }
+    }
 }

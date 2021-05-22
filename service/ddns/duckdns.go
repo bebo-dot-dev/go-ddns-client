@@ -3,14 +3,14 @@ package ddns
 import (
 	"errors"
 	"fmt"
+	"go-ddns-client/service/notifications"
 	"log"
 	"net"
 	"net/http"
 )
 
+// DuckDNSClient implements the duckdns dynamic dns client
 /*
-The duckdns dynamic dns client
-
 duckdns docs: https://www.duckdns.org/spec.jsp
 
 request url: https://www.duckdns.org/update?domains={YOURVALUE}&token={YOURVALUE}[&ip={YOURVALUE}][&ipv6={YOURVALUE}][&verbose=true][&clear=true]
@@ -20,12 +20,12 @@ OK
 */
 type DuckDNSClient Client
 
-//returns the name of this dynamic dns client
+// Name returns the name of this dynamic dns client
 func (client DuckDNSClient) Name() string {
 	return "DuckDNS dynamic DNS client"
 }
 
-//performs the dynamic dns IP address update operation
+// UpdateIPAddress performs the dynamic dns IP address update operation
 func (client DuckDNSClient) UpdateIPAddress(publicIpAddress net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
 		"https://www.duckdns.org/update?domains=%s&token=%s&ip=%s",
@@ -52,11 +52,13 @@ func (client DuckDNSClient) UpdateIPAddress(publicIpAddress net.IP) error {
 			publicIpAddress, client.ServiceConfig.TargetDomain, responseStr))
 	}
 
+	notifications.GetManager(client.NotificationConfig).Send(client.ServiceConfig.TargetDomain, publicIpAddress.String())
 	client.LogIPAddressUpdate()
+
 	return nil
 }
 
-//logs the dynamic dns client IP address update
+// LogIPAddressUpdate logs the dynamic dns client IP address update
 func (client DuckDNSClient) LogIPAddressUpdate() {
 	log.Printf("The %s IP address update for domain %s succeeded", client.Name(), client.ServiceConfig.TargetDomain)
 }

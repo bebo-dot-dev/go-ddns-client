@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"go-ddns-client/service/notifications"
 	"log"
 	"net"
 	"net/http"
 )
 
+// GoDaddyClient implements the godaddy dynamic dns client
 /*
-The godaddy dynamic dns client
-
 godaddy docs: https://developer.godaddy.com/doc/endpoint/domains#/v1/recordReplaceTypeName
 
 request urls:
@@ -29,12 +29,12 @@ sample response:
 */
 type GoDaddyClient Client
 
-//returns the name of this dynamic dns client
+// Name returns the name of this dynamic dns client
 func (client GoDaddyClient) Name() string {
 	return "GoDaddy API dynamic DNS client"
 }
 
-//performs the dynamic dns IP address update operation
+// UpdateIPAddress performs the dynamic dns IP address update operation
 func (client GoDaddyClient) UpdateIPAddress(publicIpAddress net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
 		"https://api.godaddy.com/v1/domains/%s/records/A/%s",
@@ -50,7 +50,7 @@ func (client GoDaddyClient) UpdateIPAddress(publicIpAddress net.IP) error {
 		"ttl": %d,
 		"weight": 0
 	  }]`, publicIpAddress, client.ServiceConfig.Port, client.ServiceConfig.TTL)
-	
+
 	headers := make(map[string]string)
 	headers["accept"] = "application/json"
 	headers["Content-Type"] = "application/json"
@@ -74,11 +74,13 @@ func (client GoDaddyClient) UpdateIPAddress(publicIpAddress net.IP) error {
 			publicIpAddress, client.ServiceConfig.TargetDomain, responseStr))
 	}
 
+	notifications.GetManager(client.NotificationConfig).Send(client.ServiceConfig.TargetDomain, publicIpAddress.String())
 	client.LogIPAddressUpdate()
+
 	return nil
 }
 
-//logs the dynamic dns client IP address update
+// LogIPAddressUpdate logs the dynamic dns client IP address update
 func (client GoDaddyClient) LogIPAddressUpdate() {
 	log.Printf("The %s IP address update for domain %s succeeded", client.Name(), client.ServiceConfig.TargetDomain)
 }

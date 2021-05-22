@@ -10,6 +10,7 @@ type Configuration struct {
 	UpdateInterval string                 `json:"updateInterval"`
 	Router         RouterConfiguration    `json:"router"`
 	Services       []ServiceConfiguration `json:"services"`
+	Notifications  Notifications          `json:"notifications"`
 }
 
 type RouterConfiguration struct {
@@ -33,7 +34,19 @@ type ServiceConfiguration struct {
 	TTL          int    `json:"ttl"`
 }
 
-//loads the serviceConfig.json file described by configFilename
+type Notifications struct {
+	SipgateSMS SipgateSMS `json:"sipgateSMS"`
+}
+
+type SipgateSMS struct {
+	Enabled   bool   `json:"enabled"`
+	TokenId   string `json:"tokenId"`
+	Token     string `json:"token"`
+	SmsId     string `json:"smsId"`
+	Recipient string `json:"recipient"`
+}
+
+// Load loads the serviceConfig.json file described by configFilename
 func Load(configFilename string, config *Configuration) {
 	jsonByteArr, err := ioutil.ReadFile(configFilename)
 	if err != nil {

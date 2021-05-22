@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-//Describes the interface of a type able to return the public facing IP address in use where this code is running
+// AddressProvider describes the interface of a type able to return the public facing IP address in use where this code is running
 type AddressProvider interface {
-	//returns the name of an IPv4 public IP address provider
+	// ProviderName returns the name of an IPv4 public IP address provider
 	ProviderName() string
-	//returns the public IP address
+	// GetPublicIPAddress returns the public IP address
 	GetPublicIPAddress() (net.IP, error)
-	//logs the public IP address
+	// LogPublicIPAddress logs the public IP address
 	LogPublicIPAddress(net.IP)
 }
 
@@ -27,12 +27,12 @@ sample json response: 255.255.255.255
 */
 type Default struct{}
 
-//returns the name of this IPv4 public IP address provider
+// ProviderName returns the name of this IPv4 public IP address provider
 func (ipProvider Default) ProviderName() string {
 	return "api.ipify.org public IPV4 address provider"
 }
 
-//performs a HTTP request to https://api.ipify.org to retrieve and return the public IP address
+// GetPublicIPAddress performs a HTTP request to https://api.ipify.org to retrieve and return the public IP address
 func (ipProvider Default) GetPublicIPAddress() (net.IP, error) {
 	response, err := http.Get("https://api.ipify.org")
 	if err != nil {
@@ -58,7 +58,7 @@ func (ipProvider Default) GetPublicIPAddress() (net.IP, error) {
 	return ipv4, nil
 }
 
-//logs the public IP address
+// LogPublicIPAddress logs the public IP address
 func (ipProvider Default) LogPublicIPAddress(ip net.IP) {
 	log.Printf("The %s reports the public IPv4 as %s", ipProvider.ProviderName(), ip)
 }

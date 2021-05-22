@@ -4,14 +4,14 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"go-ddns-client/service/notifications"
 	"log"
 	"net"
 	"net/http"
 )
 
+// NamecheapClient implements the namecheap dynamic dns client
 /*
-The namecheap dynamic dns client
-
 namecheap docs: https://www.namecheap.com/support/knowledgebase/article.aspx/29/11/how-do-i-use-a-browser-to-dynamically-update-the-hosts-ip/
 
 request url: https://dynamicdns.park-your-domain.com/update?host=@&domain=example.com&password=PASSWORD&ip=255.255.255.255
@@ -61,12 +61,12 @@ type NamecheapXmlResponse struct {
 	Debug string `xml:"debug"`
 }
 
-//returns the name of this dynamic dns client
+// Name returns the name of this dynamic dns client
 func (client NamecheapClient) Name() string {
 	return "Namecheap dynamic DNS client"
 }
 
-//performs the dynamic dns IP address update operation
+// UpdateIPAddress performs the dynamic dns IP address update operation
 func (client NamecheapClient) UpdateIPAddress(publicIpAddress net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
 		"https://dynamicdns.park-your-domain.com/update?host=@&domain=%s&password=%s&ip=%s",
@@ -96,11 +96,14 @@ func (client NamecheapClient) UpdateIPAddress(publicIpAddress net.IP) error {
 			publicIpAddress, client.ServiceConfig.TargetDomain, namecheapXml.Errors.Err1, namecheapXml.Responses.Response.ResponseNumber, namecheapXml.Responses.Response.ResponseString))
 		return err
 	}
+
+	notifications.GetManager(client.NotificationConfig).Send(client.ServiceConfig.TargetDomain, publicIpAddress.String())
 	client.LogIPAddressUpdate()
+
 	return nil
 }
 
-//logs the dynamic dns client IP address update
+// LogIPAddressUpdate logs the dynamic dns client IP address update
 func (client NamecheapClient) LogIPAddressUpdate() {
 	log.Printf("The %s IP address update for domain %s succeeded", client.Name(), client.ServiceConfig.TargetDomain)
 }

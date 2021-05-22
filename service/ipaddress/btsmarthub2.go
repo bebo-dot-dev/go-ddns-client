@@ -76,7 +76,7 @@ type BTSmartHub2 struct {
 	Config *config.RouterConfiguration
 }
 
-//models the xml response returned by a BT smart hub 2 /nonAuth/wan_conn.xml request
+// RouterStatus models the xml response returned by a BT smart hub 2 /nonAuth/wan_conn.xml request
 type RouterStatus struct {
 	XMLName           xml.Name `xml:"status"`
 	Text              string   `xml:",chardata"`
@@ -148,12 +148,12 @@ type RouterStatus struct {
 	} `xml:"locktime"`
 }
 
-//returns the name of this IPv4 public IP address provider
+// ProviderName returns the name of this IPv4 public IP address provider
 func (ipProvider BTSmartHub2) ProviderName() string {
 	return "BTSmartHub2 public IPV4 address provider"
 }
 
-//performs a HTTP request to a BT smart hub 2 router to retrieve and return the public IP address
+// GetPublicIPAddress performs a HTTP request to a BT smart hub 2 router to retrieve and return the public IP address
 func (ipProvider BTSmartHub2) GetPublicIPAddress() (net.IP, error) {
 	if ipProvider.Config == nil {
 		return nil, errors.New("config is nil and it needs to be supplied")
@@ -182,7 +182,7 @@ func (ipProvider BTSmartHub2) GetPublicIPAddress() (net.IP, error) {
 	return ipv4, nil
 }
 
-//logs the public IP address
+// LogPublicIPAddress logs the public IP address
 func (ipProvider BTSmartHub2) LogPublicIPAddress(ip net.IP) {
 	log.Printf("The %s reports the public IPv4 as %s", ipProvider.ProviderName(), ip)
 }

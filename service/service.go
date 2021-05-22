@@ -13,7 +13,7 @@ var (
 	lastPublicIpAddr    net.IP
 )
 
-//retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddress actions as required
+// PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddress actions as required
 func PerformDDNSActions(config *config.Configuration) error {
 	var err error
 
@@ -33,29 +33,29 @@ func PerformDDNSActions(config *config.Configuration) error {
 			switch serviceConfig.ServiceType {
 			case "DuckDNS":
 				{
-					err = updateIpAddress(currentPublicIpAddr, ddns.DuckDNSClient{ServiceConfig: serviceConfig})
-					if err != nil {
+					if err = updateIpAddress(currentPublicIpAddr,
+						ddns.DuckDNSClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
 						break
 					}
 				}
 			case "Namecheap":
 				{
-					err = updateIpAddress(currentPublicIpAddr, ddns.NamecheapClient{ServiceConfig: serviceConfig})
-					if err != nil {
+					if err = updateIpAddress(currentPublicIpAddr,
+						ddns.NamecheapClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
 						break
 					}
 				}
 			case "NoIP":
 				{
-					err = updateIpAddress(currentPublicIpAddr, ddns.NoIPClient{ServiceConfig: serviceConfig})
-					if err != nil {
+					if err = updateIpAddress(currentPublicIpAddr,
+						ddns.NoIPClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
 						break
 					}
 				}
 			case "GoDaddy":
 				{
-					err = updateIpAddress(currentPublicIpAddr, ddns.GoDaddyClient{ServiceConfig: serviceConfig})
-					if err != nil {
+					if err = updateIpAddress(currentPublicIpAddr,
+						ddns.GoDaddyClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
 						break
 					}
 				}
