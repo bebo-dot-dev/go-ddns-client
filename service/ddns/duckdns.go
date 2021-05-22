@@ -29,13 +29,13 @@ func (client DuckDNSClient) UpdateIPAddress(publicIpAddress net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
 		"https://www.duckdns.org/update?domains=%s&token=%s&ip=%s",
 		client.ServiceConfig.TargetDomain,
-		client.ServiceConfig.Password,
+		client.ServiceConfig.Token,
 		publicIpAddress)
 
 	responseBytes, err := PerformHttpRequest(
 		dynDnsIpUpdateUrl,
-		client.ServiceConfig.Username,
-		client.ServiceConfig.Password)
+		"",
+		"")
 
 	if err != nil {
 		fmt.Println(responseBytes)

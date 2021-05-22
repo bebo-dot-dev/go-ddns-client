@@ -25,6 +25,7 @@ type ServiceConfiguration struct {
 	TargetDomain string `json:"targetDomain"`
 	Username     string `json:"username"`
 	Password     string `json:"password"`
+	Token        string `json:"token"`
 }
 
 //loads the serviceConfig.json file described by configFilename
