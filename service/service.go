@@ -52,6 +52,13 @@ func PerformDDNSActions(config *config.Configuration) error {
 						break
 					}
 				}
+			case "GoDaddy":
+				{
+					err = updateIpAddress(currentPublicIpAddr, ddns.GoDaddyClient{ServiceConfig: serviceConfig})
+					if err != nil {
+						break
+					}
+				}
 			}
 
 		}

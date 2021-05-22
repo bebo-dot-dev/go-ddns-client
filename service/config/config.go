@@ -26,6 +26,11 @@ type ServiceConfiguration struct {
 	Username     string `json:"username"`
 	Password     string `json:"password"`
 	Token        string `json:"token"`
+	APIKey       string `json:"apikey"`
+	APISecret    string `json:"apisecret"`
+	RecordName   string `json:"recordname"`
+	Port         int    `json:"port"`
+	TTL          int    `json:"ttl"`
 }
 
 //loads the serviceConfig.json file described by configFilename

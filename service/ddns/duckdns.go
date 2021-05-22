@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 )
 
 /*
@@ -32,10 +33,13 @@ func (client DuckDNSClient) UpdateIPAddress(publicIpAddress net.IP) error {
 		client.ServiceConfig.Token,
 		publicIpAddress)
 
-	responseBytes, err := PerformHttpRequest(
+	_, responseBytes, err := PerformHttpRequest(
+		http.MethodGet,
 		dynDnsIpUpdateUrl,
 		"",
-		"")
+		"",
+		nil,
+		nil)
 
 	if err != nil {
 		fmt.Println(responseBytes)

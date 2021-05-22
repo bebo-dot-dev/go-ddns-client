@@ -17,6 +17,15 @@
             "serviceType": "Namecheap",
             "targetDomain": "example2.com",
             "password": "0de94176d7994a0093ca60e63f66c1da"
+        },
+        {
+            "serviceType": "GoDaddy",
+            "targetDomain": "example.com",
+            "apikey": "UzQxLikm_46KxDFnbjN7cQjmw6wocia",
+            "apisecret": "46L26ydpkwMaKZV6uVdDWe",
+            "recordname": "recordName",
+            "port": 53,
+            "ttl": 600
         }
     ]
 }

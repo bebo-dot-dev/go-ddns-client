@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 )
 
 /*
@@ -73,10 +74,13 @@ func (client NamecheapClient) UpdateIPAddress(publicIpAddress net.IP) error {
 		client.ServiceConfig.Password,
 		publicIpAddress)
 
-	responseBytes, err := PerformHttpRequest(
+	_, responseBytes, err := PerformHttpRequest(
+		http.MethodGet,
 		dynDnsIpUpdateUrl,
-		client.ServiceConfig.Username,
-		client.ServiceConfig.Password)
+		"",
+		"",
+		nil,
+		nil)
 
 	if err != nil {
 		fmt.Println(responseBytes)

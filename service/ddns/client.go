@@ -23,21 +23,34 @@ type Client struct {
 	ServiceConfig config.ServiceConfiguration
 }
 
-//performs a HTTP GET request and returns the response
-func PerformHttpRequest(url string, username string, password string) ([]byte, error) {
-	request, err := http.NewRequest("GET", url, nil)
+//performs a HTTP request and returns the status code and the response
+func PerformHttpRequest(
+	method string,
+	url string,
+	username string,
+	password string,
+	body io.Reader,
+	headers map[string]string) (int, []byte, error) {
+
+	request, err := http.NewRequest(method, url, body)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	if username != "" && password != "" {
 		request.SetBasicAuth(username, password)
 	}
 
+	if headers != nil {
+		for key, value := range headers {
+			request.Header.Set(key, value)
+		}
+	}
+
 	client := &http.Client{Timeout: 5 * time.Second}
 	response, err := client.Do(request)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	defer func() {
@@ -49,8 +62,8 @@ func PerformHttpRequest(url string, username string, password string) ([]byte, e
 
 	responseBytes, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		return response.StatusCode, nil, err
 	}
 
-	return responseBytes, nil
+	return response.StatusCode, responseBytes, nil
 }
