@@ -2,61 +2,104 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"errors"
 	"log"
+	"net"
+	"os"
 )
 
 type Configuration struct {
-	UpdateInterval string                 `json:"updateInterval"`
-	Router         RouterConfiguration    `json:"router"`
-	Services       []ServiceConfiguration `json:"services"`
-	Notifications  Notifications          `json:"notifications"`
+	CfgFilePath      string                 `json:"-"`
+	UpdateInterval   string                 `json:"updateInterval"`
+	LastPublicIpAddr net.IP                 `json:"lastPublicIpAddr"`
+	Router           RouterConfiguration    `json:"router,omitempty"`
+	Services         []ServiceConfiguration `json:"services,omitempty"`
+	Notifications    Notifications          `json:"notifications,omitempty"`
 }
 
 type RouterConfiguration struct {
-	RouterType   string `json:"routerType"`
-	Username     string `json:"userName"`
-	Password     string `json:"password"`
-	LoginUrl     string `json:"loginUrl"`
-	IpDetailsUrl string `json:"ipDetailsUrl"`
+	RouterType   string `json:"routerType,omitempty"`
+	Username     string `json:"userName,omitempty"`
+	Password     string `json:"password,omitempty"`
+	LoginUrl     string `json:"loginUrl,omitempty"`
+	IpDetailsUrl string `json:"ipDetailsUrl,omitempty"`
 }
 
 type ServiceConfiguration struct {
 	ServiceType  string `json:"serviceType"`
 	TargetDomain string `json:"targetDomain"`
-	Username     string `json:"username"`
-	Password     string `json:"password"`
-	Token        string `json:"token"`
-	APIKey       string `json:"apikey"`
-	APISecret    string `json:"apisecret"`
-	RecordName   string `json:"recordname"`
-	Port         int    `json:"port"`
-	TTL          int    `json:"ttl"`
+	Username     string `json:"username,omitempty"`
+	Password     string `json:"password,omitempty"`
+	Token        string `json:"token,omitempty"`
+	APIKey       string `json:"apikey,omitempty"`
+	APISecret    string `json:"apisecret,omitempty"`
+	RecordName   string `json:"recordname,omitempty"`
+	Port         int    `json:"port,omitempty"`
+	TTL          int    `json:"ttl,omitempty"`
 }
 
 type Notifications struct {
-	SipgateSMS SipgateSMS `json:"sipgateSMS"`
+	SipgateSMS SipgateSMS `json:"sipgateSMS,omitempty"`
 }
 
 type SipgateSMS struct {
 	Enabled   bool   `json:"enabled"`
-	TokenId   string `json:"tokenId"`
-	Token     string `json:"token"`
-	SmsId     string `json:"smsId"`
-	Recipient string `json:"recipient"`
+	TokenId   string `json:"tokenId,omitempty"`
+	Token     string `json:"token,omitempty"`
+	SmsId     string `json:"smsId,omitempty"`
+	Recipient string `json:"recipient,omitempty"`
 }
 
-// Load loads the serviceConfig.json file described by configFilename
-func Load(configFilename string, config *Configuration) {
-	jsonByteArr, err := ioutil.ReadFile(configFilename)
+var (
+	Config *Configuration
+)
+
+// Load loads the serviceConfig.json file described by cfgFilePath
+func Load(cfgFilePath string) *Configuration {
+	jsonByteArr, err := os.ReadFile(cfgFilePath)
 	if err != nil {
 		//broken config file
 		log.Panic(err)
 	}
 
-	err = json.Unmarshal(jsonByteArr, &config)
+	err = json.Unmarshal(jsonByteArr, &Config)
 	if err != nil {
 		//broken json in config file
 		log.Panic(err)
 	}
+
+	Config.CfgFilePath = cfgFilePath
+	return Config
+}
+
+// Save persists the serviceConfig.json file to the file system along with the supplied currentPublicIpAddr
+func Save(currentPublicIpAddr net.IP) error {
+	if currentPublicIpAddr == nil {
+		return errors.New("cannot save a nil ip address")
+	}
+
+	Config.LastPublicIpAddr = currentPublicIpAddr
+
+	jsonByteArr, err := json.MarshalIndent(Config, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	configFile, err := os.OpenFile(Config.CfgFilePath, os.O_RDWR|os.O_TRUNC, 0755)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err := configFile.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
+
+	if _, err = configFile.Write(jsonByteArr); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-// AddressProvider describes the interface of a type able to return the public facing IP address in use where this code is running
-type AddressProvider interface {
+// IAddressProvider describes the interface of a type able to return the public facing IP address in use where this code is running
+type IAddressProvider interface {
 	// ProviderName returns the name of an IPv4 public IP address provider
 	ProviderName() string
 	// GetPublicIPAddress returns the public IP address

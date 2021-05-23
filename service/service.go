@@ -10,79 +10,79 @@ import (
 
 var (
 	currentPublicIpAddr net.IP
-	lastPublicIpAddr    net.IP
 )
 
 // PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddress actions as required
-func PerformDDNSActions(config *config.Configuration) error {
+func PerformDDNSActions(cfg *config.Configuration) error {
 	var err error
 
-	if config.Services == nil {
+	if cfg.Services == nil {
 		log.Println("no DDNS services configured, nothing to do")
 		return nil
 	}
 
-	ipAddrProvider := getPublicIpAddressProvider(&config.Router)
+	ipAddrProvider := getPublicIpAddressProvider(&cfg.Router)
 	currentPublicIpAddr, err = ipAddrProvider.GetPublicIPAddress()
 	if err != nil {
 		return err
 	}
 
-	if lastPublicIpAddr == nil || !currentPublicIpAddr.Equal(lastPublicIpAddr) {
-		for _, serviceConfig := range config.Services {
+	if cfg.LastPublicIpAddr == nil || !currentPublicIpAddr.Equal(cfg.LastPublicIpAddr) {
+		for _, serviceConfig := range cfg.Services {
 			switch serviceConfig.ServiceType {
 			case "DuckDNS":
 				{
 					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.DuckDNSClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
+						ddns.DuckDNSClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
 						break
 					}
 				}
 			case "Namecheap":
 				{
 					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.NamecheapClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
+						ddns.NamecheapClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
 						break
 					}
 				}
 			case "NoIP":
 				{
 					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.NoIPClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
+						ddns.NoIPClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
 						break
 					}
 				}
 			case "GoDaddy":
 				{
 					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.GoDaddyClient{ServiceConfig: &serviceConfig, NotificationConfig: &config.Notifications}); err != nil {
+						ddns.GoDaddyClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
 						break
 					}
 				}
 			}
 
 		}
+		if err == nil {
+			if err = config.Save(currentPublicIpAddr); err != nil {
+				return err
+			}
+		}
 	} else {
 		log.Printf("Public IPv4 address %s remains unchanged, no DDNS updates performed", currentPublicIpAddr)
-	}
-
-	if err == nil {
-		lastPublicIpAddr = currentPublicIpAddr
 	}
 
 	return err
 }
 
-//returns a ipaddress.AddressProvider for the supplied routerConfig *config.RouterConfiguration
-func getPublicIpAddressProvider(routerConfig *config.RouterConfiguration) ipaddress.AddressProvider {
-	var ipAddressProvider ipaddress.AddressProvider
+//returns an ipaddress.IAddressProvider for the supplied routerConfig *config.RouterConfiguration
+func getPublicIpAddressProvider(routerConfig *config.RouterConfiguration) ipaddress.IAddressProvider {
+	var ipAddressProvider ipaddress.IAddressProvider
 	if routerConfig != nil && routerConfig.RouterType != "" {
 		switch routerConfig.RouterType {
 		case "BTSmartHub2":
-			ipAddressProvider = ipaddress.BTSmartHub2{Config: routerConfig}
+			ipAddressProvider = &ipaddress.BTSmartHub2{Config: routerConfig}
 		}
 	} else {
-		ipAddressProvider = ipaddress.Default{}
+		ipAddressProvider = &ipaddress.Default{}
 	}
 	return ipAddressProvider
 }

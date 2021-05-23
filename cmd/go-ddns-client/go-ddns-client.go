@@ -10,29 +10,28 @@ import (
 )
 
 var (
-	configFilename = ""
-	cfg            = &config.Configuration{}
+	cfg *config.Configuration
 )
 
 //application entry point
 func main() {
-	configFilename = readFlags()
-	config.Load(configFilename, cfg)
+	cfgFilePath := readFlags()
+	cfg = config.Load(cfgFilePath)
 	startDDNSTicker()
 }
 
 //reads the flags (arguments) supplied to the application
 func readFlags() string {
-	var configFilename string
-	flag.StringVar(&configFilename, "cfg", "", "specify the path to the serviceConfig.json file")
+	var cfgFilePath string
+	flag.StringVar(&cfgFilePath, "cfg", "", "specify the path to the serviceConfig.json file")
 	flag.Parse()
 
-	if configFilename == "" {
+	if cfgFilePath == "" {
 		//unspecified config file path
 		flag.Usage()
 		os.Exit(1)
 	}
-	return configFilename
+	return cfgFilePath
 }
 
 //starts the application timed DNS client ticker to perform dynamic DNS updates on the configured config.UpdateInterval
@@ -43,7 +42,7 @@ func startDDNSTicker() {
 		select {
 		case _ = <-ticker.C:
 			oldInterval := cfg.UpdateInterval
-			config.Load(configFilename, cfg)
+			cfg = config.Load(cfg.CfgFilePath)
 			err := service.PerformDDNSActions(cfg)
 			if err != nil {
 				log.Println(err)
