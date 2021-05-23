@@ -5,11 +5,6 @@ import (
 	"go-ddns-client/service/ddns"
 	"go-ddns-client/service/ipaddress"
 	"log"
-	"net"
-)
-
-var (
-	currentPublicIpAddr net.IP
 )
 
 // PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddress actions as required
@@ -22,52 +17,27 @@ func PerformDDNSActions(cfg *config.Configuration) error {
 	}
 
 	ipAddrProvider := getPublicIpAddressProvider(&cfg.Router)
-	currentPublicIpAddr, err = ipAddrProvider.GetPublicIPAddress()
+	ipAddr, err := ipAddrProvider.GetPublicIPAddress()
 	if err != nil {
 		return err
 	}
 
-	if cfg.LastPublicIpAddr == nil || !currentPublicIpAddr.Equal(cfg.LastPublicIpAddr) {
+	if cfg.LastPublicIpAddr == nil || !ipAddr.Equal(cfg.LastPublicIpAddr) {
 		for _, serviceConfig := range cfg.Services {
-			switch serviceConfig.ServiceType {
-			case "DuckDNS":
-				{
-					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.DuckDNSClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
-						break
-					}
-				}
-			case "Namecheap":
-				{
-					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.NamecheapClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
-						break
-					}
-				}
-			case "NoIP":
-				{
-					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.NoIPClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
-						break
-					}
-				}
-			case "GoDaddy":
-				{
-					if err = updateIpAddress(currentPublicIpAddr,
-						ddns.GoDaddyClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}); err != nil {
-						break
-					}
+			ddnsClient := getDDNSClient(cfg, serviceConfig)
+			if ddnsClient != nil {
+				if err = ddnsClient.UpdateIPAddress(ipAddr); err != nil {
+					break
 				}
 			}
-
 		}
 		if err == nil {
-			if err = config.Save(currentPublicIpAddr); err != nil {
+			if err = config.Save(ipAddr); err != nil {
 				return err
 			}
 		}
 	} else {
-		log.Printf("Public IPv4 address %s remains unchanged, no DDNS updates performed", currentPublicIpAddr)
+		log.Printf("Public IPv4 address %s remains unchanged, no DDNS updates performed", ipAddr)
 	}
 
 	return err
@@ -87,7 +57,18 @@ func getPublicIpAddressProvider(routerConfig *config.RouterConfiguration) ipaddr
 	return ipAddressProvider
 }
 
-//performs an IPv4 ip address update using the supplied publicIpAddress and client
-func updateIpAddress(publicIpAddress net.IP, client ddns.IDynamicDnsClient) error {
-	return client.UpdateIPAddress(publicIpAddress)
+//returns the corresponding ddns.IDynamicDnsClient for the supplied serviceConfig.ServiceType
+func getDDNSClient(cfg *config.Configuration, serviceConfig config.ServiceConfiguration) ddns.IDynamicDnsClient {
+	switch serviceConfig.ServiceType {
+	case "DuckDNS":
+		return ddns.DuckDNSClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}
+	case "GoDaddy":
+		return ddns.GoDaddyClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}
+	case "Namecheap":
+		return ddns.NamecheapClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}
+	case "NoIP":
+		return ddns.NoIPClient{ServiceConfig: &serviceConfig, NotificationConfig: &cfg.Notifications}
+	default:
+		return nil
+	}
 }
