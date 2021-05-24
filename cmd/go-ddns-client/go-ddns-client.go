@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+var (
+	tickerInterval string
+)
+
 //application entry point
 func main() {
 	cfgFilePath := readFlags()
@@ -32,20 +36,17 @@ func readFlags() string {
 
 //starts the application timed DNS client ticker to perform dynamic DNS updates on the configured config.UpdateInterval
 func startDDNSTicker() {
-	ticker := time.NewTicker(getTickerInterval(config.Config.UpdateInterval))
+	tickerInterval = config.AppData.UpdateInterval
+	ticker := time.NewTicker(getTickerInterval(tickerInterval))
 	defer ticker.Stop()
 	for {
 		select {
 		case _ = <-ticker.C:
-			oldInterval := config.Config.UpdateInterval
-			config.Load(config.Config.CfgFilePath)
-			err := service.PerformDDNSActions(config.Config)
+			err := service.PerformDDNSActions(config.AppData)
 			if err != nil {
 				log.Println(err)
 			}
-			if config.Config.UpdateInterval != oldInterval {
-				ticker.Reset(getTickerInterval(config.Config.UpdateInterval))
-			}
+			checkTickerInterval(ticker)
 		}
 	}
 }
@@ -57,4 +58,11 @@ func getTickerInterval(updateInterval string) time.Duration {
 		log.Panic(err)
 	}
 	return duration
+}
+
+func checkTickerInterval(ticker *time.Ticker) {
+	if config.AppData.UpdateInterval != tickerInterval {
+		ticker.Reset(getTickerInterval(config.AppData.UpdateInterval))
+		tickerInterval = config.AppData.UpdateInterval
+	}
 }

@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
+	"time"
 )
 
 type Configuration struct {
@@ -51,25 +53,62 @@ type SipgateSMS struct {
 }
 
 var (
-	Config *Configuration
+	AppData        *Configuration
+	mutex          = &sync.Mutex{}
+	configFileInfo os.FileInfo
 )
 
-// Load loads the serviceConfig.json file described by cfgFilePath
-func Load(cfgFilePath string) *Configuration {
+//unmarshalConfigFile performs a json.Unmarshal call on the supplied cfgFilePath to deserialize the file to the
+//package level AppData *Configuration variable
+func unmarshalConfigFile(cfgFilePath string) {
 	jsonByteArr, err := os.ReadFile(cfgFilePath)
 	if err != nil {
 		//broken config file
 		log.Panic(err)
 	}
 
-	err = json.Unmarshal(jsonByteArr, &Config)
+	err = json.Unmarshal(jsonByteArr, &AppData)
 	if err != nil {
 		//broken json in config file
 		log.Panic(err)
 	}
+}
 
-	Config.CfgFilePath = cfgFilePath
-	return Config
+//watchConfigFile implements a simple file watcher on the AppData.CfgFilePath file to enable reload on change detection
+func watchConfigFile() {
+	if AppData != nil {
+		for {
+			nowFileInfo, err := os.Stat(AppData.CfgFilePath)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			if nowFileInfo.Size() != configFileInfo.Size() || nowFileInfo.ModTime() != configFileInfo.ModTime() {
+				//refresh on change
+				mutex.Lock()
+				unmarshalConfigFile(AppData.CfgFilePath)
+				configFileInfo = nowFileInfo
+				mutex.Unlock()
+				log.Printf("A change was detected on %s, the file was reloaded", AppData.CfgFilePath)
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}
+}
+
+// Load loads the serviceConfig.json file described by cfgFilePath
+func Load(cfgFilePath string) {
+	var err error
+	if AppData == nil {
+		configFileInfo, err = os.Stat(cfgFilePath)
+		if err != nil {
+			log.Panic(err)
+		}
+		unmarshalConfigFile(cfgFilePath)
+		AppData.CfgFilePath = cfgFilePath
+
+		go watchConfigFile() //spin the file watcher into a concurrent go routine
+	}
 }
 
 // Save persists the serviceConfig.json file to the file system along with the supplied currentPublicIpAddr
@@ -78,14 +117,14 @@ func Save(currentPublicIpAddr net.IP) error {
 		return errors.New("cannot save a nil ip address")
 	}
 
-	Config.LastPublicIpAddr = currentPublicIpAddr
+	AppData.LastPublicIpAddr = currentPublicIpAddr
 
-	jsonByteArr, err := json.MarshalIndent(Config, "", "    ")
+	jsonByteArr, err := json.MarshalIndent(AppData, "", "    ")
 	if err != nil {
 		return err
 	}
 
-	configFile, err := os.OpenFile(Config.CfgFilePath, os.O_RDWR|os.O_TRUNC, 0755)
+	configFile, err := os.OpenFile(AppData.CfgFilePath, os.O_RDWR|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}
