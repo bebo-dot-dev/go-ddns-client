@@ -12,6 +12,7 @@ import (
 
 type Configuration struct {
 	CfgFilePath      string                 `json:"-"`
+	Reloaded         chan bool              `json:"-"` // A channel upon which config reload events are delivered
 	UpdateInterval   string                 `json:"updateInterval"`
 	LastPublicIpAddr net.IP                 `json:"lastPublicIpAddr"`
 	Router           RouterConfiguration    `json:"router,omitempty"`
@@ -54,7 +55,7 @@ type SipgateSMS struct {
 
 var (
 	AppData        *Configuration
-	mutex          = &sync.Mutex{}
+	mu             = &sync.Mutex{}
 	configFileInfo os.FileInfo
 )
 
@@ -85,11 +86,12 @@ func watchConfigFile() {
 
 			if nowFileInfo.Size() != configFileInfo.Size() || nowFileInfo.ModTime() != configFileInfo.ModTime() {
 				//refresh on change
-				mutex.Lock()
+				mu.Lock()
 				unmarshalConfigFile(AppData.CfgFilePath)
 				configFileInfo = nowFileInfo
-				mutex.Unlock()
+				mu.Unlock()
 				log.Printf("A change was detected on %s, the file was reloaded", AppData.CfgFilePath)
+				AppData.Reloaded <- true
 			}
 			time.Sleep(1 * time.Second)
 		}
@@ -106,8 +108,8 @@ func Load(cfgFilePath string) {
 		}
 		unmarshalConfigFile(cfgFilePath)
 		AppData.CfgFilePath = cfgFilePath
-
-		go watchConfigFile() //spin the file watcher into a concurrent go routine
+		AppData.Reloaded = make(chan bool)
+		go watchConfigFile() //spin the file watcher into go routine
 	}
 }
 
