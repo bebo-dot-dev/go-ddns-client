@@ -32,7 +32,7 @@ func PerformDDNSActions(cfg *config.Configuration) error {
 			}
 		}
 		if err == nil {
-			if err = config.Save(ipAddr); err != nil {
+			if err = cfg.Save(ipAddr); err != nil {
 				return err
 			}
 		}
