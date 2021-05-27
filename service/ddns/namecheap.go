@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"go-ddns-client/service/notifications"
 	"log"
 	"net"
 	"net/http"
@@ -97,7 +96,6 @@ func (client NamecheapClient) UpdateIPAddress(publicIpAddress net.IP) error {
 		return err
 	}
 
-	notifications.GetManager(client.NotificationConfig).Send(client.ServiceConfig.TargetDomain, publicIpAddress.String())
 	client.LogIPAddressUpdate()
 
 	return nil

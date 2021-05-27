@@ -3,7 +3,6 @@ package ddns
 import (
 	"errors"
 	"fmt"
-	"go-ddns-client/service/notifications"
 	"log"
 	"net"
 	"net/http"
@@ -52,7 +51,6 @@ func (client NoIPClient) UpdateIPAddress(publicIpAddress net.IP) error {
 			publicIpAddress, client.ServiceConfig.TargetDomain, responseStr))
 	}
 
-	notifications.GetManager(client.NotificationConfig).Send(client.ServiceConfig.TargetDomain, publicIpAddress.String())
 	client.LogIPAddressUpdate()
 
 	return nil

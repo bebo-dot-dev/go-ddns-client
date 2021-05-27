@@ -28,8 +28,12 @@ type SipGateSmsNotifier struct {
 }
 
 //Send sends the sipgate IO sms notification
-func (notifier SipGateSmsNotifier) Send(domain string, ipaddress string) error {
-	msg := fmt.Sprintf("The IP address for domain '%s' has been updated to '%s'", domain, ipaddress)
+func (notifier SipGateSmsNotifier) Send(domainCount int, domainsStr string, ipaddress string) error {
+	plural := ""
+	if domainCount > 1 {
+		plural = "s"
+	}
+	msg := fmt.Sprintf("The IP address for domain%s '%s' has been updated to '%s'", plural, domainsStr, ipaddress)
 
 	jsonBody := fmt.Sprintf(`{
 		"smsId": "%s",

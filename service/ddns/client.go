@@ -20,8 +20,7 @@ type IDynamicDnsClient interface {
 }
 
 type Client struct {
-	ServiceConfig      *config.ServiceConfiguration
-	NotificationConfig *config.Notifications
+	ServiceConfig *config.ServiceConfiguration
 }
 
 // PerformHttpRequest performs a HTTP request and returns the status code and the response

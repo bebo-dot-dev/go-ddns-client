@@ -8,9 +8,15 @@ import (
 	"time"
 )
 
+//INotificationManager describes the interface the notifications.Manager
+type INotificationManager interface {
+	GetNotifierCount() int
+	Send(domainCount int, domainsStr, ipaddress string) error
+}
+
 //INotification describes the interface of a type able to send a notification
 type INotification interface {
-	Send(domain, currentIP string) error
+	Send(domainCount int, domainsStr string, ipaddress string) error
 }
 
 //Manager wraps types that have the ability to send a notification
@@ -19,7 +25,7 @@ type Manager struct {
 }
 
 //GetManager returns the notification manager
-func GetManager(conf *config.Notifications) *Manager {
+func GetManager(conf *config.Notifications) INotificationManager {
 	var notifiers []INotification
 
 	if conf.SipgateSMS.Enabled {
@@ -31,13 +37,18 @@ func GetManager(conf *config.Notifications) *Manager {
 	}
 }
 
+func (manager *Manager) GetNotifierCount() int {
+	return len(manager.Notifiers)
+}
+
 //Send sends one or more notifications
-func (manager *Manager) Send(domain, currentIP string) {
+func (manager *Manager) Send(domainCount int, domainsStr string, ipaddress string) error {
 	for _, notifier := range manager.Notifiers {
-		if err := notifier.Send(domain, currentIP); err != nil {
-			log.Println("Send notification failed with error:", err)
+		if err := notifier.Send(domainCount, domainsStr, ipaddress); err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
 // PerformHttpRequest performs a HTTP request and returns the status code and the response
