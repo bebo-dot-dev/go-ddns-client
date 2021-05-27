@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"go-ddns-client/service/config"
+	"log"
 	"net/http"
 )
 
@@ -52,5 +53,14 @@ func (notifier SipGateSmsNotifier) Send(domainCount int, domainsStr string, ipad
 		bytes.NewBuffer([]byte(jsonBody)),
 		headers)
 
-	return err
+	if err != nil {
+		return notifier.sipgateError(err)
+	}
+
+	log.Println("Sipgate IO SMS notification sent")
+	return nil
+}
+
+func (notifier SipGateSmsNotifier) sipgateError(err error) error {
+	return fmt.Errorf("sipgate IO SMS error: %v", err)
 }

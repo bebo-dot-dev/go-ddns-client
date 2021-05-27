@@ -14,10 +14,12 @@ A Go dynamic DNS client
 * [Namecheap](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/namecheap.go)
 * [NoIP](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/noip.go)
 ### Supported notification services:
+* [Email (SSL and TLS)](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/notifications/email.go)
 * [Sipgate IO SMS](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/notifications/sipgate.go)
 ### Tested on:
 * Linux x64
 * Linux Arm aarch64
+* Windows10
 ### Build with Go build:
 ```bash
 #Linux x64
@@ -27,5 +29,7 @@ env GOOS=linux go build ./cmd/go-ddns-client/go-ddns-client.go
 #Linux Arm aarch64
 env GOOS=linux GOARCH=arm64 go build ./cmd/go-ddns-client/go-ddns-client.go
 ```
-
-
+```bash
+#Windows
+env GOOS=windows go build ./cmd/go-ddns-client/go-ddns-client.go
+```

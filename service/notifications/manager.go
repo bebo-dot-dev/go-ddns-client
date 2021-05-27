@@ -31,6 +31,9 @@ func GetManager(conf *config.Notifications) INotificationManager {
 	if conf.SipgateSMS.Enabled {
 		notifiers = append(notifiers, &SipGateSmsNotifier{conf: &conf.SipgateSMS})
 	}
+	if conf.Email.IsEnabled {
+		notifiers = append(notifiers, &EmailNotifier{conf: &conf.Email})
+	}
 
 	return &Manager{
 		Notifiers: notifiers,

@@ -35,6 +35,27 @@
             "token": "sipgate token secret",
             "smsId": "s0",
             "recipient": "441234567890"
+        },
+        "email": {
+            "enabled": false,
+            "username": "user@example.com",
+            "password": "password",
+            "From": {
+                "name": "sender name",
+                "address": "sender@example.com"
+            },
+            "Recipients": [
+                {
+                    "name": "recipient1 name",
+                    "address": "recipient1@example.com"
+                },
+                {
+                    "name": "recipient2 name",
+                    "address": "recipient2@example.com"
+                }
+            ],
+            "smtpServer": "smtp.server.com:587",
+            "securityType": "TLS"
         }
     }
 }

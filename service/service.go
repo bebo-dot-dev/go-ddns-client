@@ -1,14 +1,12 @@
 package service
 
 import (
-	"fmt"
 	"go-ddns-client/service/config"
 	"go-ddns-client/service/ddns"
 	"go-ddns-client/service/ipaddress"
 	"go-ddns-client/service/notifications"
 	"log"
 	"net"
-	"strings"
 )
 
 // PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddress actions as required
@@ -28,7 +26,7 @@ func PerformDDNSActions(cfg *config.Configuration) error {
 
 	if cfg.LastPublicIpAddr == nil || !ipAddr.Equal(cfg.LastPublicIpAddr) {
 		for _, serviceConfig := range cfg.Services {
-			ddnsClient := getDDNSClient(cfg, serviceConfig)
+			ddnsClient := getDDNSClient(&serviceConfig)
 			if ddnsClient != nil {
 				if err = ddnsClient.UpdateIPAddress(ipAddr); err != nil {
 					break
@@ -65,16 +63,16 @@ func getPublicIpAddressProvider(routerConfig *config.RouterConfiguration) ipaddr
 }
 
 //returns the corresponding ddns.IDynamicDnsClient for the supplied serviceConfig.ServiceType
-func getDDNSClient(cfg *config.Configuration, serviceConfig config.ServiceConfiguration) ddns.IDynamicDnsClient {
+func getDDNSClient(serviceConfig *config.ServiceConfiguration) ddns.IDynamicDnsClient {
 	switch serviceConfig.ServiceType {
 	case "DuckDNS":
-		return ddns.DuckDNSClient{ServiceConfig: &serviceConfig}
+		return ddns.DuckDNSClient{ServiceConfig: serviceConfig}
 	case "GoDaddy":
-		return ddns.GoDaddyClient{ServiceConfig: &serviceConfig}
+		return ddns.GoDaddyClient{ServiceConfig: serviceConfig}
 	case "Namecheap":
-		return ddns.NamecheapClient{ServiceConfig: &serviceConfig}
+		return ddns.NamecheapClient{ServiceConfig: serviceConfig}
 	case "NoIP":
-		return ddns.NoIPClient{ServiceConfig: &serviceConfig}
+		return ddns.NoIPClient{ServiceConfig: serviceConfig}
 	default:
 		return nil
 	}
@@ -85,20 +83,11 @@ func sendNotifications(cfg *config.Configuration, publicIpAddr net.IP) error {
 	var err error
 	mgr := notifications.GetManager(&cfg.Notifications)
 	if mgr.GetNotifierCount() > 0 {
-		var builder strings.Builder
-		for index, svc := range cfg.Services {
-			_, err = fmt.Fprintf(&builder, "%s", svc.TargetDomain)
-			if err != nil {
-				return err
-			}
-			if index < (len(cfg.Services) - 1) {
-				_, err = fmt.Fprint(&builder, ",")
-				if err != nil {
-					return err
-				}
-			}
+		domainsStr, err := cfg.GetDomainsStr()
+		if err != nil {
+			return err
 		}
-		err = mgr.Send(len(cfg.Services), builder.String(), publicIpAddr.String())
+		err = mgr.Send(len(cfg.Services), domainsStr, publicIpAddr.String())
 	}
 	return err
 }
