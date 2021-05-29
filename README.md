@@ -9,6 +9,7 @@ A Go dynamic DNS client
 * [Falls back](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ipaddress/default.go) to using https://api.ipify.org to determine the public IP address when not using a BT Smart Hub 2 router.
 * IPv4 and IPv6 support  
 * Realtime notifications
+* A built-in http server that serves up the current IPv4 and IPv6 IP addresses 
 ### Supported DDNS services:
 * [DuckDNS](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/duckdns.go)
 * [GoDaddy](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/godaddy.go)

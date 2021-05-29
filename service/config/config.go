@@ -18,6 +18,8 @@ type Configuration struct {
 	FileInfo           os.FileInfo            `json:"-"`              // Used to track changes to the config file
 	Mu                 *sync.Mutex            `json:"-"`              // Used to lock and unlock access to the package level cfg
 	UpdateInterval     string                 `json:"updateInterval"` // A duration string parsed by time.ParseDuration
+	ServerPort         string                 `json:"serverPort"`     // The port that the inbuilt http server listens on
+	Hostname           string                 `json:"hostname"`       // The hostname of the machine where this code is running
 	LastIPv4           net.IP                 `json:"lastIPv4"`
 	LastIPv6           net.IP                 `json:"lastIPv6"`
 	Router             RouterConfiguration    `json:"router,omitempty"`
@@ -186,6 +188,11 @@ func (appData *Configuration) IPAddressesChanged(ipv4 net.IP, ipv6 net.IP) bool 
 
 // Save persists the serviceConfig.json file to the file system with the supplied currentPublicIpAddr
 func (appData *Configuration) Save(ipv4 net.IP, ipv6 net.IP) error {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	appData.Hostname = hostname
 	appData.LastIPv4 = ipv4
 	appData.LastIPv6 = ipv6
 
@@ -223,7 +230,7 @@ func (appData *Configuration) GetDomainsStr() (string, error) {
 			return "", err
 		}
 		if index < (len(cfg.Services) - 1) {
-			_, err = fmt.Fprint(&builder, ",")
+			_, err = fmt.Fprint(&builder, ", ")
 			if err != nil {
 				return "", err
 			}

@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/mail"
 	"net/smtp"
-	"os"
 	"strings"
 )
 
@@ -18,7 +17,7 @@ type EmailNotifier struct {
 }
 
 //Send sends the email notification
-func (notifier EmailNotifier) Send(domainCount int, domainsStr, ipv4, ipv6 string) error {
+func (notifier EmailNotifier) Send(hostname string, domainCount int, domainsStr, ipv4, ipv6 string) error {
 	host, _, _ := net.SplitHostPort(notifier.conf.SmtpServer)
 	auth := smtp.PlainAuth("", notifier.conf.Username, notifier.conf.Password, host)
 
@@ -43,7 +42,10 @@ func (notifier EmailNotifier) Send(domainCount int, domainsStr, ipv4, ipv6 strin
 		return notifier.emailError(err)
 	}
 
-	emailMsg := notifier.buildMessage(from, *recipients, domainCount, domainsStr, ipv4, ipv6)
+	emailMsg, err := notifier.buildMessage(from, *recipients, hostname, domainCount, domainsStr, ipv4, ipv6)
+	if err != nil {
+		return notifier.emailError(err)
+	}
 	_, err = w.Write([]byte(emailMsg))
 	if err != nil {
 		return notifier.emailError(err)
@@ -125,60 +127,55 @@ func (notifier EmailNotifier) getAddresses(client *smtp.Client) (*mail.Address, 
 func (notifier EmailNotifier) buildMessage(
 	from *mail.Address,
 	recipients []mail.Address,
+	hostname string,
 	domainCount int,
 	domainsStr,
 	ipv4,
-	ipv6 string) string {
+	ipv6 string) (string, error) {
 
 	plural := ""
 	if domainCount > 1 {
 		plural = "s"
 	}
+
 	subject := "go ddns client ip address update"
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		return ""
-	}
-
 	body := fmt.Sprintf("The IP addresses for domain%s '%s' were updated to:\n%s\n%s\nby: %s",
 		plural, domainsStr, ipv4, ipv6, hostname)
 
-	var builder strings.Builder
+	var rb strings.Builder
 	for index, recipient := range recipients {
 		if recipient.Name != "" {
-			_, err := fmt.Fprintf(&builder, "\"%s\" ", recipient.Name)
+			_, err := fmt.Fprintf(&rb, "\"%s\" ", recipient.Name)
 			if err != nil {
-				return ""
+				return "", nil
 			}
 		}
 
-		_, err := fmt.Fprintf(&builder, "<%s>", recipient.Address)
+		_, err := fmt.Fprintf(&rb, "<%s>", recipient.Address)
 		if err != nil {
-			return ""
+			return "", nil
 		}
 		if index < (len(recipients) - 1) {
-			_, err = fmt.Fprint(&builder, ", ")
+			_, err = fmt.Fprint(&rb, ", ")
 			if err != nil {
-				return ""
+				return "", nil
 			}
 		}
 	}
 
-	//setup headers
 	headers := make(map[string]string)
 	headers["From"] = from.String()
-	headers["To"] = builder.String()
+	headers["To"] = rb.String()
 	headers["Subject"] = subject
 
-	//setup message
+	//construct the message
 	message := ""
 	for k, v := range headers {
 		message += fmt.Sprintf("%s: %s\r\n", k, v)
 	}
 	message += "\r\n" + body
 
-	return message
+	return message, nil
 }
 
 func (notifier EmailNotifier) emailError(err error) error {

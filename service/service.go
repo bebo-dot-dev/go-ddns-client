@@ -1,15 +1,51 @@
 package service
 
 import (
+	"fmt"
 	"go-ddns-client/service/config"
 	"go-ddns-client/service/ddns"
 	"go-ddns-client/service/ipaddress"
 	"go-ddns-client/service/notifications"
+	"io"
 	"log"
 	"net"
+	"net/http"
 )
 
-// PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddresses actions as required
+//StartServer starts a http server on port 8080 to serve up the current ipv4 and ipv6 ip addresses
+func StartServer(cfg *config.Configuration) {
+	ipv4Handler := func(w http.ResponseWriter, req *http.Request) {
+		_, err := io.WriteString(w, cfg.LastIPv4.String())
+		if err != nil {
+			log.Printf("io.WriteString error in ipv4Handler: %v", err)
+		}
+	}
+	ipv6Handler := func(w http.ResponseWriter, req *http.Request) {
+		_, err := io.WriteString(w, cfg.LastIPv6.String())
+		if err != nil {
+			log.Printf("io.WriteString error in ipv6Handler: %v", err)
+		}
+	}
+	jsonHandler := func(w http.ResponseWriter, req *http.Request) {
+		const json = `{
+	"hostname": "%s",
+	"ipv4": "%s",
+	"ipv6": "%s"
+}`
+		w.Header().Set("Content-Type", "application/json")
+		_, err := io.WriteString(w, fmt.Sprintf(json, cfg.Hostname, cfg.LastIPv4, cfg.LastIPv6))
+		if err != nil {
+			log.Printf("io.WriteString error in jsonHandler: %v", err)
+		}
+	}
+
+	http.HandleFunc("/ipv4", ipv4Handler)
+	http.HandleFunc("/ipv6", ipv6Handler)
+	http.HandleFunc("/json", jsonHandler)
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, nil))
+}
+
+//PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddresses actions as required
 func PerformDDNSActions(cfg *config.Configuration) error {
 	var err error
 
@@ -87,7 +123,7 @@ func sendNotifications(cfg *config.Configuration, ipv4, ipv6 net.IP) error {
 		if err != nil {
 			return err
 		}
-		err = mgr.Send(len(cfg.Services), domainsStr, ipv4.String(), ipv6.String())
+		err = mgr.Send(cfg.Hostname, len(cfg.Services), domainsStr, ipv4.String(), ipv6.String())
 	}
 	return err
 }

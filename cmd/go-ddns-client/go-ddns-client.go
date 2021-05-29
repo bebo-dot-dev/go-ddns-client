@@ -13,6 +13,7 @@ import (
 func main() {
 	cfgFilePath := readFlags()
 	cfg, ticker := config.Load(cfgFilePath)
+	go service.StartServer(cfg)
 	handleTicks(cfg, ticker)
 }
 

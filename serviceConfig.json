@@ -1,5 +1,6 @@
 {
     "updateInterval": "5s",
+    "serverPort": "9000",
     "router": {
         "routerType": "BTSmartHub2",
         "userName": "admin",
