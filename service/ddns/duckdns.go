@@ -24,13 +24,14 @@ func (client DuckDNSClient) String() string {
 	return "DuckDNS dynamic DNS client"
 }
 
-// UpdateIPAddress performs the dynamic dns IP address update operation
-func (client DuckDNSClient) UpdateIPAddress(publicIpAddress net.IP) error {
+// UpdateIPAddresses performs the dynamic dns IP address update operation
+func (client DuckDNSClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
-		"https://www.duckdns.org/update?domains=%s&token=%s&ip=%s",
+		"https://www.duckdns.org/update?domains=%s&token=%s&ip=%s&ipv6=%s",
 		client.ServiceConfig.TargetDomain,
 		client.ServiceConfig.Token,
-		publicIpAddress)
+		ipv4,
+		ipv6)
 
 	_, responseBytes, err := PerformHttpRequest(
 		http.MethodGet,
@@ -47,8 +48,8 @@ func (client DuckDNSClient) UpdateIPAddress(publicIpAddress net.IP) error {
 
 	responseStr := string(responseBytes)
 	if responseStr != "OK" {
-		return errors.New(fmt.Sprintf("The DuckDNS IP address update to %s for domain %s failed: '%s'",
-			publicIpAddress, client.ServiceConfig.TargetDomain, responseStr))
+		return errors.New(fmt.Sprintf("The DuckDNS IP address update to %s / %s for domain %s failed: '%s'",
+			ipv4, ipv6, client.ServiceConfig.TargetDomain, responseStr))
 	}
 
 	client.LogIPAddressUpdate()

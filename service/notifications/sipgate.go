@@ -6,6 +6,7 @@ import (
 	"go-ddns-client/service/config"
 	"log"
 	"net/http"
+	"os"
 )
 
 //SipGateSmsNotifier implements the sipgate IO sms sender
@@ -29,12 +30,19 @@ type SipGateSmsNotifier struct {
 }
 
 //Send sends the sipgate IO sms notification
-func (notifier SipGateSmsNotifier) Send(domainCount int, domainsStr string, ipaddress string) error {
+func (notifier SipGateSmsNotifier) Send(domainCount int, domainsStr, ipv4, ipv6 string) error {
 	plural := ""
 	if domainCount > 1 {
 		plural = "s"
 	}
-	msg := fmt.Sprintf("The IP address for domain%s '%s' has been updated to '%s'", plural, domainsStr, ipaddress)
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
+	msg := fmt.Sprintf("The IP addresses for domain%s '%s' were updated to:\n%s\n%s\nby: %s",
+		plural, domainsStr, ipv4, ipv6, hostname)
 
 	jsonBody := fmt.Sprintf(`{
 		"smsId": "%s",
@@ -45,7 +53,7 @@ func (notifier SipGateSmsNotifier) Send(domainCount int, domainsStr string, ipad
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 
-	_, _, err := PerformHttpRequest(
+	_, _, err = PerformHttpRequest(
 		http.MethodPost,
 		"https://api.sipgate.com/v2/sessions/sms",
 		notifier.conf.TokenId,

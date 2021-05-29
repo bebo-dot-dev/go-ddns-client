@@ -13,7 +13,7 @@ import (
 /*
 noip docs: https://www.noip.com/integrate/request
 
-request url: https://username:password@dynupdate.no-ip.com/nic/update?hostname=mytest.example.com&myip=192.0.2.25
+request url: https://username:password@dynupdate.no-ip.com/nic/update?hostname=mytest.example.com&myip=192.0.2.25&myipv6=2a0f:21a1:2103:2001:f5e:1111:6fd:6bc7
 
 sample response:
 nochg 192.0.2.25
@@ -25,12 +25,13 @@ func (client NoIPClient) String() string {
 	return "NoIP dynamic DNS client"
 }
 
-// UpdateIPAddress performs the dynamic dns IP address update operation
-func (client NoIPClient) UpdateIPAddress(publicIpAddress net.IP) error {
+// UpdateIPAddresses performs the dynamic dns IP address update operation
+func (client NoIPClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
-		"https://dynupdate.no-ip.com/nic/update?hostname=%s&myip=%s",
+		"https://dynupdate.no-ip.com/nic/update?hostname=%s&myip=%s&myipv6=%s",
 		client.ServiceConfig.TargetDomain,
-		publicIpAddress)
+		ipv4,
+		ipv6)
 
 	_, responseBytes, err := PerformHttpRequest(
 		http.MethodGet,
@@ -47,8 +48,8 @@ func (client NoIPClient) UpdateIPAddress(publicIpAddress net.IP) error {
 
 	responseStr := string(responseBytes)
 	if !strings.HasPrefix(responseStr, "nochg") && !strings.HasPrefix(responseStr, "good") {
-		return errors.New(fmt.Sprintf("The noIP IP address update to %s for domain %s failed: '%s'",
-			publicIpAddress, client.ServiceConfig.TargetDomain, responseStr))
+		return errors.New(fmt.Sprintf("The noIP IP address update to %s / %s for domain %s failed: '%s'",
+			ipv4, ipv6, client.ServiceConfig.TargetDomain, responseStr))
 	}
 
 	client.LogIPAddressUpdate()

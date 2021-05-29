@@ -11,12 +11,12 @@ import (
 //INotificationManager describes the interface the notifications.Manager
 type INotificationManager interface {
 	GetNotifierCount() int
-	Send(domainCount int, domainsStr, ipaddress string) error
+	Send(domainCount int, domainsStr, ipv4, ipv6 string) error
 }
 
 //INotification describes the interface of a type able to send a notification
 type INotification interface {
-	Send(domainCount int, domainsStr string, ipaddress string) error
+	Send(domainCount int, domainsStr, ipv4, ipv6 string) error
 }
 
 //Manager wraps types that have the ability to send a notification
@@ -45,9 +45,9 @@ func (manager *Manager) GetNotifierCount() int {
 }
 
 //Send sends one or more notifications
-func (manager *Manager) Send(domainCount int, domainsStr string, ipaddress string) error {
+func (manager *Manager) Send(domainCount int, domainsStr string, ipv4, ipv6 string) error {
 	for _, notifier := range manager.Notifiers {
-		if err := notifier.Send(domainCount, domainsStr, ipaddress); err != nil {
+		if err := notifier.Send(domainCount, domainsStr, ipv4, ipv6); err != nil {
 			return err
 		}
 	}

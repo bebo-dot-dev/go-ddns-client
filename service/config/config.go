@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -19,7 +18,8 @@ type Configuration struct {
 	FileInfo           os.FileInfo            `json:"-"`              // Used to track changes to the config file
 	Mu                 *sync.Mutex            `json:"-"`              // Used to lock and unlock access to the package level cfg
 	UpdateInterval     string                 `json:"updateInterval"` // A duration string parsed by time.ParseDuration
-	LastPublicIpAddr   net.IP                 `json:"lastPublicIpAddr"`
+	LastIPv4           net.IP                 `json:"lastIPv4"`
+	LastIPv6           net.IP                 `json:"lastIPv6"`
 	Router             RouterConfiguration    `json:"router,omitempty"`
 	Services           []ServiceConfiguration `json:"services,omitempty"`
 	Notifications      Notifications          `json:"notifications,omitempty"`
@@ -176,13 +176,18 @@ func Load(cfgFilePath string) (*Configuration, *time.Ticker) {
 	return cfg, ticker
 }
 
-// Save persists the serviceConfig.json file to the file system with the supplied currentPublicIpAddr
-func (appData *Configuration) Save(currentPublicIpAddr net.IP) error {
-	if currentPublicIpAddr == nil {
-		return errors.New("cannot save a nil ip address")
-	}
+//IPAddressesChanged returns an indicator that describes if either the supplied ipv4 or ipv6 have changed
+func (appData *Configuration) IPAddressesChanged(ipv4 net.IP, ipv6 net.IP) bool {
+	return appData.LastIPv4 == nil ||
+		appData.LastIPv6 == nil ||
+		(appData.LastIPv4 != nil && !ipv4.Equal(appData.LastIPv4)) ||
+		(appData.LastIPv6 != nil && !ipv6.Equal(appData.LastIPv6))
+}
 
-	appData.LastPublicIpAddr = currentPublicIpAddr
+// Save persists the serviceConfig.json file to the file system with the supplied currentPublicIpAddr
+func (appData *Configuration) Save(ipv4 net.IP, ipv6 net.IP) error {
+	appData.LastIPv4 = ipv4
+	appData.LastIPv6 = ipv6
 
 	jsonByteArr, err := json.MarshalIndent(appData, "", "    ")
 	if err != nil {

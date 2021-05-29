@@ -9,7 +9,7 @@ import (
 	"net"
 )
 
-// PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddress actions as required
+// PerformDDNSActions retrieves the current public IPv4 ip address and performs any json configured UpdateIPAddresses actions as required
 func PerformDDNSActions(cfg *config.Configuration) error {
 	var err error
 
@@ -18,38 +18,38 @@ func PerformDDNSActions(cfg *config.Configuration) error {
 		return nil
 	}
 
-	ipAddrProvider := getPublicIpAddressProvider(&cfg.Router)
-	ipAddr, err := ipAddrProvider.GetPublicIPAddress()
+	ipAddrProvider := getIpAddressProvider(&cfg.Router)
+	ipv4, ipv6, err := ipAddrProvider.GetPublicIPAddresses()
 	if err != nil {
 		return err
 	}
 
-	if cfg.LastPublicIpAddr == nil || !ipAddr.Equal(cfg.LastPublicIpAddr) {
+	if cfg.IPAddressesChanged(ipv4, ipv6) {
 		for _, serviceConfig := range cfg.Services {
 			ddnsClient := getDDNSClient(&serviceConfig)
 			if ddnsClient != nil {
-				if err = ddnsClient.UpdateIPAddress(ipAddr); err != nil {
+				if err = ddnsClient.UpdateIPAddresses(ipv4, ipv6); err != nil {
 					break
 				}
 			}
 		}
 		if err == nil {
-			if err = cfg.Save(ipAddr); err != nil {
+			if err = cfg.Save(ipv4, ipv6); err != nil {
 				return err
 			}
-			if err = sendNotifications(cfg, ipAddr); err != nil {
+			if err = sendNotifications(cfg, ipv4, ipv6); err != nil {
 				return err
 			}
 		}
 	} else {
-		log.Printf("Public IPv4 address %s remains unchanged, no DDNS updates performed", ipAddr)
+		log.Printf("IPv4 address %s and IPv6 %s remain unchanged, no DDNS updates performed", ipv4, ipv6)
 	}
 
 	return err
 }
 
-//returns an ipaddress.IAddressProvider for the supplied routerConfig *config.RouterConfiguration
-func getPublicIpAddressProvider(routerConfig *config.RouterConfiguration) ipaddress.IAddressProvider {
+//getIpAddressProvider returns an ipaddress.IAddressProvider for the supplied routerConfig *config.RouterConfiguration
+func getIpAddressProvider(routerConfig *config.RouterConfiguration) ipaddress.IAddressProvider {
 	var ipAddressProvider ipaddress.IAddressProvider
 	if routerConfig != nil && routerConfig.RouterType != "" {
 		switch routerConfig.RouterType {
@@ -79,7 +79,7 @@ func getDDNSClient(serviceConfig *config.ServiceConfiguration) ddns.IDynamicDnsC
 }
 
 //sendNotifications sends all configured notifications on ip address change
-func sendNotifications(cfg *config.Configuration, publicIpAddr net.IP) error {
+func sendNotifications(cfg *config.Configuration, ipv4, ipv6 net.IP) error {
 	var err error
 	mgr := notifications.GetManager(&cfg.Notifications)
 	if mgr.GetNotifierCount() > 0 {
@@ -87,7 +87,7 @@ func sendNotifications(cfg *config.Configuration, publicIpAddr net.IP) error {
 		if err != nil {
 			return err
 		}
-		err = mgr.Send(len(cfg.Services), domainsStr, publicIpAddr.String())
+		err = mgr.Send(len(cfg.Services), domainsStr, ipv4.String(), ipv6.String())
 	}
 	return err
 }

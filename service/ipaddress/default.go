@@ -5,16 +5,15 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 )
 
 // IAddressProvider describes the interface of a type able to return the public facing IP address in use where this code is running
 type IAddressProvider interface {
-	// ProviderName returns the name of an IPv4 public IP address provider
-	ProviderName() string
-	// GetPublicIPAddress returns the public IP address
-	GetPublicIPAddress() (net.IP, error)
-	// LogPublicIPAddress logs the public IP address
-	LogPublicIPAddress(net.IP)
+	// GetPublicIPAddresses returns public IP addresses
+	GetPublicIPAddresses() (net.IP, net.IP, error)
+	// LogIPAddresses logs the public IP addresses
+	LogIPAddresses(net.IP, net.IP)
 }
 
 /*
@@ -27,16 +26,17 @@ sample json response: 255.255.255.255
 */
 type Default struct{}
 
-// ProviderName returns the name of this IPv4 public IP address provider
-func (ipProvider Default) ProviderName() string {
-	return "api.ipify.org public IPV4 address provider"
+//String implements the Stringer interface to return the name of this IAddressProvider
+func (ipProvider Default) String() string {
+	return "api.ipify.org IP address provider"
 }
 
-// GetPublicIPAddress performs a HTTP request to https://api.ipify.org to retrieve and return the public IP address
-func (ipProvider Default) GetPublicIPAddress() (net.IP, error) {
+// GetPublicIPAddresses performs a HTTP request to https://api.ipify.org to retrieve and return the public IPv4 address
+// and calls GetIPv6 to return the current IPv6 address of the host where this code is executing
+func (ipProvider Default) GetPublicIPAddresses() (net.IP, net.IP, error) {
 	response, err := http.Get("https://api.ipify.org")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	defer func() {
@@ -47,18 +47,42 @@ func (ipProvider Default) GetPublicIPAddress() (net.IP, error) {
 	}()
 	ipBytes, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var ipv4 = net.IP{}
 	err = ipv4.UnmarshalText(ipBytes)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	ipProvider.LogPublicIPAddress(ipv4)
-	return ipv4, nil
+
+	ipv6, err := GetIPv6()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ipProvider.LogIPAddresses(ipv4, ipv6)
+	return ipv4, ipv6, nil
 }
 
-// LogPublicIPAddress logs the public IP address
-func (ipProvider Default) LogPublicIPAddress(ip net.IP) {
-	log.Printf("The %s reports the public IPv4 as %s", ipProvider.ProviderName(), ip)
+//GetIPv6 returns the IPv6 address of the host where this code is executing
+func GetIPv6() (net.IP, error) {
+	var ip net.IP
+	ifAddresses, err := net.InterfaceAddrs()
+	if err != nil {
+		return nil, err
+	}
+	for _, address := range ifAddresses {
+		if ipNetwork, ok := address.(*net.IPNet); ok && !ipNetwork.IP.IsLoopback() {
+			if len(strings.Split(ipNetwork.IP.String(), ":")) == 8 {
+				ip = ipNetwork.IP
+				break
+			}
+		}
+	}
+	return ip, nil
+}
+
+// LogIPAddresses logs the public IP addresses
+func (ipProvider Default) LogIPAddresses(ipv4, ipv6 net.IP) {
+	log.Printf("The %s reports the public IPv4 as %s and the public IPv6 as %s", ipProvider, ipv4, ipv6)
 }

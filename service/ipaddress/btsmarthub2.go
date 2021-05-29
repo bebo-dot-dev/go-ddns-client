@@ -148,43 +148,50 @@ type RouterStatus struct {
 	} `xml:"locktime"`
 }
 
-// ProviderName returns the name of this IPv4 public IP address provider
-func (ipProvider BTSmartHub2) ProviderName() string {
-	return "BTSmartHub2 public IPV4 address provider"
+//String implements the Stringer interface to return the name of this IAddressProvider
+func (ipProvider BTSmartHub2) String() string {
+	return "BTSmartHub2 IP address provider"
 }
 
-// GetPublicIPAddress performs a HTTP request to a BT smart hub 2 router to retrieve and return the public IP address
-func (ipProvider BTSmartHub2) GetPublicIPAddress() (net.IP, error) {
+// GetPublicIPAddresses performs a HTTP request to a BT smart hub 2 router to retrieve and return the public IP address
+// and calls GetIPv6 to return the current IPv6 address of the host where this code is executing
+func (ipProvider BTSmartHub2) GetPublicIPAddresses() (net.IP, net.IP, error) {
 	if ipProvider.Config == nil {
-		return nil, errors.New("config is nil and it needs to be supplied")
+		return nil, nil, errors.New("config is nil and it needs to be supplied")
 	}
 	xmlBytes, err := getRouterStatusXml(ipProvider.Config.IpDetailsUrl)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var routerStatus RouterStatus
 	err = xml.Unmarshal(xmlBytes, &routerStatus)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	ipv4sArr := strings.Split(routerStatus.Ip4InfoList.Value, ",")
 	decodedIpv4s, err := url.QueryUnescape(strings.Trim(ipv4sArr[0], "[]'"))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	ipv4sArr = strings.Split(decodedIpv4s, ";")
 	ipv4 := net.ParseIP(ipv4sArr[0])
 	if ipv4 == nil {
-		return nil, errors.New(fmt.Sprintf("unable to determine public ip from %s", decodedIpv4s))
+		return nil, nil, errors.New(fmt.Sprintf("unable to determine public ip from %s", decodedIpv4s))
 	}
-	ipProvider.LogPublicIPAddress(ipv4)
-	return ipv4, nil
+
+	ipv6, err := GetIPv6()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ipProvider.LogIPAddresses(ipv4, ipv6)
+	return ipv4, ipv6, nil
 }
 
-// LogPublicIPAddress logs the public IP address
-func (ipProvider BTSmartHub2) LogPublicIPAddress(ip net.IP) {
-	log.Printf("The %s reports the public IPv4 as %s", ipProvider.ProviderName(), ip)
+// LogIPAddresses logs the public IP address
+func (ipProvider BTSmartHub2) LogIPAddresses(ipv4, ipv6 net.IP) {
+	log.Printf("The %s reports the public IPv4 as %s and the public IPv6 as %s", ipProvider, ipv4, ipv6)
 }
 
 //performs a HTTP GET request to retrieve and return the /nonAuth/wan_conn.xml

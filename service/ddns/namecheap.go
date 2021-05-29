@@ -65,13 +65,13 @@ func (client NamecheapClient) String() string {
 	return "Namecheap dynamic DNS client"
 }
 
-// UpdateIPAddress performs the dynamic dns IP address update operation
-func (client NamecheapClient) UpdateIPAddress(publicIpAddress net.IP) error {
+// UpdateIPAddresses performs the dynamic dns IP address update operation
+func (client NamecheapClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
 		"https://dynamicdns.park-your-domain.com/update?host=@&domain=%s&password=%s&ip=%s",
 		client.ServiceConfig.TargetDomain,
 		client.ServiceConfig.Password,
-		publicIpAddress)
+		ipv4)
 
 	_, responseBytes, err := PerformHttpRequest(
 		http.MethodGet,
@@ -92,7 +92,7 @@ func (client NamecheapClient) UpdateIPAddress(publicIpAddress net.IP) error {
 	}
 	if namecheapXml.ErrCount != 0 {
 		err = errors.New(fmt.Sprintf("The namecheap IP address update to %s for domain %s failed with error: '%s', responseNumber: %d, responseString: '%s'",
-			publicIpAddress, client.ServiceConfig.TargetDomain, namecheapXml.Errors.Err1, namecheapXml.Responses.Response.ResponseNumber, namecheapXml.Responses.Response.ResponseString))
+			ipv4, client.ServiceConfig.TargetDomain, namecheapXml.Errors.Err1, namecheapXml.Responses.Response.ResponseNumber, namecheapXml.Responses.Response.ResponseString))
 		return err
 	}
 

@@ -18,7 +18,7 @@ type EmailNotifier struct {
 }
 
 //Send sends the email notification
-func (notifier EmailNotifier) Send(domainCount int, domainsStr string, ipaddress string) error {
+func (notifier EmailNotifier) Send(domainCount int, domainsStr, ipv4, ipv6 string) error {
 	host, _, _ := net.SplitHostPort(notifier.conf.SmtpServer)
 	auth := smtp.PlainAuth("", notifier.conf.Username, notifier.conf.Password, host)
 
@@ -43,7 +43,7 @@ func (notifier EmailNotifier) Send(domainCount int, domainsStr string, ipaddress
 		return notifier.emailError(err)
 	}
 
-	emailMsg := notifier.buildMessage(from, *recipients, domainCount, domainsStr, ipaddress)
+	emailMsg := notifier.buildMessage(from, *recipients, domainCount, domainsStr, ipv4, ipv6)
 	_, err = w.Write([]byte(emailMsg))
 	if err != nil {
 		return notifier.emailError(err)
@@ -126,8 +126,9 @@ func (notifier EmailNotifier) buildMessage(
 	from *mail.Address,
 	recipients []mail.Address,
 	domainCount int,
-	domainsStr string,
-	ipaddress string) string {
+	domainsStr,
+	ipv4,
+	ipv6 string) string {
 
 	plural := ""
 	if domainCount > 1 {
@@ -140,8 +141,8 @@ func (notifier EmailNotifier) buildMessage(
 		return ""
 	}
 
-	body := fmt.Sprintf("The IP address for domain%s '%s' was updated to '%s' by %s",
-		plural, domainsStr, ipaddress, hostname)
+	body := fmt.Sprintf("The IP addresses for domain%s '%s' were updated to:\n%s\n%s\nby: %s",
+		plural, domainsStr, ipv4, ipv6, hostname)
 
 	var builder strings.Builder
 	for index, recipient := range recipients {

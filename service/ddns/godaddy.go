@@ -33,8 +33,8 @@ func (client GoDaddyClient) String() string {
 	return "GoDaddy API dynamic DNS client"
 }
 
-// UpdateIPAddress performs the dynamic dns IP address update operation
-func (client GoDaddyClient) UpdateIPAddress(publicIpAddress net.IP) error {
+// UpdateIPAddresses performs the dynamic dns IP address update operation
+func (client GoDaddyClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
 		"https://api.godaddy.com/v1/domains/%s/records/A/%s",
 		client.ServiceConfig.TargetDomain,
@@ -48,7 +48,7 @@ func (client GoDaddyClient) UpdateIPAddress(publicIpAddress net.IP) error {
 		"service": "string",
 		"ttl": %d,
 		"weight": 0
-	  }]`, publicIpAddress, client.ServiceConfig.Port, client.ServiceConfig.TTL)
+	  }]`, ipv4, client.ServiceConfig.Port, client.ServiceConfig.TTL)
 
 	headers := make(map[string]string)
 	headers["accept"] = "application/json"
@@ -70,7 +70,7 @@ func (client GoDaddyClient) UpdateIPAddress(publicIpAddress net.IP) error {
 	if statusCode != http.StatusOK {
 		responseStr := string(responseBytes)
 		return errors.New(fmt.Sprintf("The GoDaddy IP address update to %s for domain %s failed: '%s'",
-			publicIpAddress, client.ServiceConfig.TargetDomain, responseStr))
+			ipv4, client.ServiceConfig.TargetDomain, responseStr))
 	}
 
 	client.LogIPAddressUpdate()
