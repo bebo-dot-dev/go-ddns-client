@@ -20,8 +20,8 @@ nochg 192.0.2.25
 */
 type NoIPClient Client
 
-// Name returns the name of this dynamic dns client
-func (client NoIPClient) Name() string {
+//String implements the Stringer interface to return the name of this dynamic dns client
+func (client NoIPClient) String() string {
 	return "NoIP dynamic DNS client"
 }
 
@@ -58,5 +58,5 @@ func (client NoIPClient) UpdateIPAddress(publicIpAddress net.IP) error {
 
 // LogIPAddressUpdate logs the dynamic dns client IP address update
 func (client NoIPClient) LogIPAddressUpdate() {
-	log.Printf("The %s IP address update for domain %s succeeded", client.Name(), client.ServiceConfig.TargetDomain)
+	log.Printf("The %s IP address update for domain %s succeeded", client, client.ServiceConfig.TargetDomain)
 }

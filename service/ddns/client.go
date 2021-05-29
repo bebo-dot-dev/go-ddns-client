@@ -11,8 +11,6 @@ import (
 
 // IDynamicDnsClient describes the interface of a type that knows how to perform a dynamic dns IP address update
 type IDynamicDnsClient interface {
-	// Name returns the name of a dynamic dns client
-	Name() string
 	// UpdateIPAddress performs the dynamic dns IP address update operation
 	UpdateIPAddress(publicIpAddr net.IP) error
 	// LogIPAddressUpdate logs the dynamic dns client IP address update

@@ -19,8 +19,8 @@ OK
 */
 type DuckDNSClient Client
 
-// Name returns the name of this dynamic dns client
-func (client DuckDNSClient) Name() string {
+//String implements the Stringer interface to return the name of this dynamic dns client
+func (client DuckDNSClient) String() string {
 	return "DuckDNS dynamic DNS client"
 }
 
@@ -58,5 +58,5 @@ func (client DuckDNSClient) UpdateIPAddress(publicIpAddress net.IP) error {
 
 // LogIPAddressUpdate logs the dynamic dns client IP address update
 func (client DuckDNSClient) LogIPAddressUpdate() {
-	log.Printf("The %s IP address update for domain %s succeeded", client.Name(), client.ServiceConfig.TargetDomain)
+	log.Printf("The %s IP address update for domain %s succeeded", client, client.ServiceConfig.TargetDomain)
 }

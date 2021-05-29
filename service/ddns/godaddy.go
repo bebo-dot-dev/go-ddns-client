@@ -28,8 +28,8 @@ sample response:
 */
 type GoDaddyClient Client
 
-// Name returns the name of this dynamic dns client
-func (client GoDaddyClient) Name() string {
+//String implements the Stringer interface to return the name of this dynamic dns client
+func (client GoDaddyClient) String() string {
 	return "GoDaddy API dynamic DNS client"
 }
 
@@ -80,5 +80,5 @@ func (client GoDaddyClient) UpdateIPAddress(publicIpAddress net.IP) error {
 
 // LogIPAddressUpdate logs the dynamic dns client IP address update
 func (client GoDaddyClient) LogIPAddressUpdate() {
-	log.Printf("The %s IP address update for domain %s succeeded", client.Name(), client.ServiceConfig.TargetDomain)
+	log.Printf("The %s IP address update for domain %s succeeded", client, client.ServiceConfig.TargetDomain)
 }

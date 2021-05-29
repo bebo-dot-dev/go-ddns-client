@@ -60,8 +60,8 @@ type NamecheapXmlResponse struct {
 	Debug string `xml:"debug"`
 }
 
-// Name returns the name of this dynamic dns client
-func (client NamecheapClient) Name() string {
+//String implements the Stringer interface to return the name of this dynamic dns client
+func (client NamecheapClient) String() string {
 	return "Namecheap dynamic DNS client"
 }
 
@@ -103,5 +103,5 @@ func (client NamecheapClient) UpdateIPAddress(publicIpAddress net.IP) error {
 
 // LogIPAddressUpdate logs the dynamic dns client IP address update
 func (client NamecheapClient) LogIPAddressUpdate() {
-	log.Printf("The %s IP address update for domain %s succeeded", client.Name(), client.ServiceConfig.TargetDomain)
+	log.Printf("The %s IP address update for domain %s succeeded", client, client.ServiceConfig.TargetDomain)
 }
