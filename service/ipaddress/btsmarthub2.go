@@ -76,76 +76,13 @@ type BTSmartHub2 struct {
 	Config *config.RouterConfiguration
 }
 
-// RouterStatus models the xml response returned by a BT smart hub 2 /nonAuth/wan_conn.xml request
+// RouterStatus is partial model of xml response returned by a BT smart hub 2 /nonAuth/wan_conn.xml request
 type RouterStatus struct {
-	XMLName           xml.Name `xml:"status"`
-	Text              string   `xml:",chardata"`
-	WanConnStatusList struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"wan_conn_status_list"`
-	WanConnVolumeList struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"wan_conn_volume_list"`
-	WanLinestatusRateList struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"wan_linestatus_rate_list"`
-	WlanChannelList struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"wlan_channel_list"`
-	Curlinkstatus struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"curlinkstatus"`
-	Sysuptime struct {
-		Text  string `xml:",chardata"`
-		Value string `xml:"value,attr"`
-	} `xml:"sysuptime"`
-	StatusRate struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"status_rate"`
-	WanActiveIdx struct {
-		Text  string `xml:",chardata"`
-		Value string `xml:"value,attr"`
-	} `xml:"wan_active_idx"`
-	LinkStatus struct {
-		Text  string `xml:",chardata"`
-		Value string `xml:"value,attr"`
-	} `xml:"link_status"`
 	Ip4InfoList struct {
 		Text  string `xml:",chardata"`
 		Type  string `xml:"type,attr"`
 		Value string `xml:"value,attr"`
 	} `xml:"ip4_info_list"`
-	Ip6LlaList struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"ip6_lla_list"`
-	Ip6GuaList struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"ip6_gua_list"`
-	Ip6RdnsList struct {
-		Text  string `xml:",chardata"`
-		Type  string `xml:"type,attr"`
-		Value string `xml:"value,attr"`
-	} `xml:"ip6_rdns_list"`
-	Locktime struct {
-		Text  string `xml:",chardata"`
-		Value string `xml:"value,attr"`
-	} `xml:"locktime"`
 }
 
 //String implements the Stringer interface to return the name of this IAddressProvider
