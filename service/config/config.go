@@ -82,23 +82,28 @@ var (
 
 //unmarshalConfigFile performs a json.Unmarshal call on the supplied cfgFilePath to deserialize the cfg file to the
 //package level cfg *Configuration variable
-func unmarshalConfigFile(cfgFilePath string) {
+func unmarshalConfigFile(cfgFilePath string) bool {
+	loaded := false
 	jsonByteArr, err := os.ReadFile(cfgFilePath)
 	if err != nil {
 		//broken config file
 		log.Panic(err)
 	}
 
-	err = json.Unmarshal(jsonByteArr, &cfg)
-	if err != nil {
-		//broken json in config file
-		log.Panic(err)
-	}
+	if len(jsonByteArr) > 0 {
+		err = json.Unmarshal(jsonByteArr, &cfg)
+		if err != nil {
+			//broken json in config file
+			log.Panic(err)
+		}
 
-	cfg.FileInfo, err = os.Stat(cfgFilePath)
-	if err != nil {
-		log.Panic(err)
+		cfg.FileInfo, err = os.Stat(cfgFilePath)
+		if err != nil {
+			log.Panic(err)
+		}
+		loaded = true
 	}
+	return loaded
 }
 
 //watchConfigFile implements a simple file watcher on the cfg.cfgFilePath file to enable reload on change detection
@@ -112,12 +117,15 @@ func (appData *Configuration) watchConfigFile() {
 		if nowFileInfo.Size() != appData.FileInfo.Size() || nowFileInfo.ModTime() != appData.FileInfo.ModTime() {
 			//refresh on change
 			appData.Mu.Lock()
-			unmarshalConfigFile(appData.CfgFilePath)
-			appData.FileInfo = nowFileInfo
+			reloaded := unmarshalConfigFile(appData.CfgFilePath)
 			appData.Mu.Unlock()
 
-			log.Printf("A change was detected on %s, the file was reloaded", appData.CfgFilePath)
-			appData.Reloaded <- true //channel comm
+			if reloaded {
+				appData.FileInfo = nowFileInfo
+				log.Printf("A change was detected on %s, the file was reloaded", appData.CfgFilePath)
+				appData.Reloaded <- true //channel comm
+			}
+
 		}
 		time.Sleep(1 * time.Second)
 	}
@@ -165,7 +173,10 @@ enable config reload on change. Load also creates a new Time.Ticker with a tick 
 configured appData.UpdateInterval
 */
 func Load(cfgFilePath string) (*Configuration, *time.Ticker) {
-	unmarshalConfigFile(cfgFilePath)
+	loaded := unmarshalConfigFile(cfgFilePath)
+	if !loaded {
+		log.Panicf("failed to load %s as the json configuration file", cfgFilePath)
+	}
 
 	cfg.CfgFilePath = cfgFilePath
 	cfg.Mu = &sync.Mutex{}
