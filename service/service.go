@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"encoding/json"
 	"go-ddns-client/service/config"
 	"go-ddns-client/service/ddns"
 	"go-ddns-client/service/ipaddress"
@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 //StartServer starts a http server on port 8080 to serve up the current ipv4 and ipv6 ip addresses
@@ -27,15 +28,18 @@ func StartServer(cfg *config.Configuration) {
 		}
 	}
 	jsonHandler := func(w http.ResponseWriter, req *http.Request) {
-		const json = `{
-	"hostname": "%s",
-	"ipv4": "%s",
-	"ipv6": "%s"
-}`
+		response := struct {
+			Hostname  string `json:"hostname"`
+			Ipv4      net.IP `json:"ipv4"`
+			Ipv6      net.IP `json:"ipv6"`
+			Timestamp string `json:"timestamp"`
+		}{cfg.Hostname, cfg.LastIPv4, cfg.LastIPv6, time.Now().Format(time.RFC3339)}
 		w.Header().Set("Content-Type", "application/json")
-		_, err := io.WriteString(w, fmt.Sprintf(json, cfg.Hostname, cfg.LastIPv4, cfg.LastIPv6))
+		encoder := json.NewEncoder(w)
+		encoder.SetIndent("", "    ")
+		err := encoder.Encode(response)
 		if err != nil {
-			log.Printf("io.WriteString error in jsonHandler: %v", err)
+			log.Printf("json.Encoder error in jsonHandler: %v", err)
 		}
 	}
 
