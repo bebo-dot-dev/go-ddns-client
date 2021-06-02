@@ -2,10 +2,10 @@ package service
 
 import (
 	"encoding/json"
-	"go-ddns-client/service/config"
-	"go-ddns-client/service/ddns"
-	"go-ddns-client/service/ipaddress"
-	"go-ddns-client/service/notifications"
+	"github.com/bebo-dot-dev/go-ddns-client/service/config"
+	"github.com/bebo-dot-dev/go-ddns-client/service/ddns"
+	"github.com/bebo-dot-dev/go-ddns-client/service/ipaddress"
+	"github.com/bebo-dot-dev/go-ddns-client/service/notifications"
 	"io"
 	"log"
 	"net"
