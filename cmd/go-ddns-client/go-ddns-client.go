@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"go-ddns-client/service"
-	"go-ddns-client/service/config"
+	"github.com/bebo-dot-dev/go-ddns-client/service"
+	"github.com/bebo-dot-dev/go-ddns-client/service/config"
 	"log"
 	"os"
 	"time"

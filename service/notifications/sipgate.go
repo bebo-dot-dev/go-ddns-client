@@ -3,7 +3,7 @@ package notifications
 import (
 	"bytes"
 	"fmt"
-	"go-ddns-client/service/config"
+	"github.com/bebo-dot-dev/go-ddns-client/service/config"
 	"log"
 	"net/http"
 )

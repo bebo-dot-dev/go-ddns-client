@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"go-ddns-client/service/config"
+	"github.com/bebo-dot-dev/go-ddns-client/service/config"
 	"io"
 	"log"
 	"net"
