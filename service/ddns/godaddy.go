@@ -2,7 +2,6 @@ package ddns
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -69,8 +68,8 @@ func (client GoDaddyClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 
 	if statusCode != http.StatusOK {
 		responseStr := string(responseBytes)
-		return errors.New(fmt.Sprintf("The GoDaddy IP address update to %s for domain %s failed: '%s'",
-			ipv4, client.ServiceConfig.TargetDomain, responseStr))
+		return fmt.Errorf("the GoDaddy IP address update to %s for domain %s failed: '%s'",
+			ipv4, client.ServiceConfig.TargetDomain, responseStr)
 	}
 
 	client.LogIPAddressUpdate()

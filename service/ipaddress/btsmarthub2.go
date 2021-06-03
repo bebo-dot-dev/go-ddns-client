@@ -114,7 +114,7 @@ func (ipProvider BTSmartHub2) GetPublicIPAddresses() (net.IP, net.IP, error) {
 	ipv4sArr = strings.Split(decodedIpv4s, ";")
 	ipv4 := net.ParseIP(ipv4sArr[0])
 	if ipv4 == nil {
-		return nil, nil, errors.New(fmt.Sprintf("unable to determine public ip from %s", decodedIpv4s))
+		return nil, nil, fmt.Errorf("unable to determine public ip from %s", decodedIpv4s)
 	}
 
 	ipv6, err := GetIPv6()

@@ -2,7 +2,6 @@ package ddns
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -91,8 +90,8 @@ func (client NamecheapClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 		return err
 	}
 	if namecheapXml.ErrCount != 0 {
-		err = errors.New(fmt.Sprintf("The namecheap IP address update to %s for domain %s failed with error: '%s', responseNumber: %d, responseString: '%s'",
-			ipv4, client.ServiceConfig.TargetDomain, namecheapXml.Errors.Err1, namecheapXml.Responses.Response.ResponseNumber, namecheapXml.Responses.Response.ResponseString))
+		err = fmt.Errorf("the namecheap IP address update to %s for domain %s failed with error: '%s', responseNumber: %d, responseString: '%s'",
+			ipv4, client.ServiceConfig.TargetDomain, namecheapXml.Errors.Err1, namecheapXml.Responses.Response.ResponseNumber, namecheapXml.Responses.Response.ResponseString)
 		return err
 	}
 

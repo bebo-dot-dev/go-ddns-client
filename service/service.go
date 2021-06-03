@@ -128,6 +128,9 @@ func sendNotifications(cfg *config.Configuration, ipv4, ipv6 net.IP) error {
 			return err
 		}
 		err = mgr.Send(cfg.Hostname, len(cfg.Services), domainsStr, ipv4.String(), ipv6.String())
+		if err != nil {
+			return err
+		}
 	}
 	return err
 }

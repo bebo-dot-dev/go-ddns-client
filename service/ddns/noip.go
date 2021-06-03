@@ -1,7 +1,6 @@
 package ddns
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -48,8 +47,8 @@ func (client NoIPClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 
 	responseStr := string(responseBytes)
 	if !strings.HasPrefix(responseStr, "nochg") && !strings.HasPrefix(responseStr, "good") {
-		return errors.New(fmt.Sprintf("The noIP IP address update to %s / %s for domain %s failed: '%s'",
-			ipv4, ipv6, client.ServiceConfig.TargetDomain, responseStr))
+		return fmt.Errorf("the noIP IP address update to %s / %s for domain %s failed: '%s'",
+			ipv4, ipv6, client.ServiceConfig.TargetDomain, responseStr)
 	}
 
 	client.LogIPAddressUpdate()

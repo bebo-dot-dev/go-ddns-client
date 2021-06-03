@@ -84,8 +84,6 @@ func (notifier EmailNotifier) getSmtpClient(host string) (*smtp.Client, error) {
 		if err != nil {
 			break
 		}
-		break
-
 	case "TLS":
 		client, err = smtp.Dial(notifier.conf.SmtpServer)
 		if err != nil {
@@ -96,7 +94,6 @@ func (notifier EmailNotifier) getSmtpClient(host string) (*smtp.Client, error) {
 		if err != nil {
 			break
 		}
-		break
 	default:
 		log.Panic("unsupported email security type " + notifier.conf.SecurityType)
 	}

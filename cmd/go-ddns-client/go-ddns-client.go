@@ -35,12 +35,10 @@ func readFlags() string {
 func handleTicks(cfg *config.Configuration, ticker *time.Ticker) {
 	defer ticker.Stop()
 	for {
-		select {
-		case _ = <-ticker.C:
-			err := service.PerformDDNSActions(cfg)
-			if err != nil {
-				log.Println(err)
-			}
+		<-ticker.C
+		err := service.PerformDDNSActions(cfg)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }

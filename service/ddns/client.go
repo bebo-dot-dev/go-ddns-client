@@ -39,10 +39,8 @@ func PerformHttpRequest(
 		request.SetBasicAuth(username, password)
 	}
 
-	if headers != nil {
-		for key, value := range headers {
-			request.Header.Set(key, value)
-		}
+	for key, value := range headers {
+		request.Header.Set(key, value)
 	}
 
 	client := &http.Client{Timeout: 5 * time.Second}

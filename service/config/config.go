@@ -144,14 +144,12 @@ func (appData *Configuration) getTickerInterval(updateInterval string) time.Dura
 //handles appData reload by listening on the appData.reloaded channel
 func (appData *Configuration) handleConfigReload(ticker *time.Ticker) {
 	for {
-		select {
-		case _ = <-appData.Reloaded:
-			if appData.UpdateInterval != appData.LastUpdateInterval {
-				//interval change ticker reset
-				ticker.Reset(appData.getTickerInterval(appData.UpdateInterval))
-				log.Printf("**Ticker interval changed from %s to %s**", appData.LastUpdateInterval, appData.UpdateInterval)
-				appData.LastUpdateInterval = appData.UpdateInterval
-			}
+		<-appData.Reloaded
+		if appData.UpdateInterval != appData.LastUpdateInterval {
+			//interval change ticker reset
+			ticker.Reset(appData.getTickerInterval(appData.UpdateInterval))
+			log.Printf("**Ticker interval changed from %s to %s**", appData.LastUpdateInterval, appData.UpdateInterval)
+			appData.LastUpdateInterval = appData.UpdateInterval
 		}
 	}
 }
