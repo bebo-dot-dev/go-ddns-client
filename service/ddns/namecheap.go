@@ -3,7 +3,6 @@ package ddns
 import (
 	"encoding/xml"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 )
@@ -59,11 +58,6 @@ type NamecheapXmlResponse struct {
 	Debug string `xml:"debug"`
 }
 
-//String implements the Stringer interface to return the name of this dynamic dns client
-func (client NamecheapClient) String() string {
-	return "Namecheap dynamic DNS client"
-}
-
 // UpdateIPAddresses performs the dynamic dns IP address update operation
 func (client NamecheapClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 	dynDnsIpUpdateUrl := fmt.Sprintf(
@@ -95,12 +89,7 @@ func (client NamecheapClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 		return err
 	}
 
-	client.LogIPAddressUpdate()
+	Client(client).LogIPAddressUpdate()
 
 	return nil
-}
-
-// LogIPAddressUpdate logs the dynamic dns client IP address update
-func (client NamecheapClient) LogIPAddressUpdate() {
-	log.Printf("The %s IP address update for domain %s succeeded", client, client.ServiceConfig.TargetDomain)
 }

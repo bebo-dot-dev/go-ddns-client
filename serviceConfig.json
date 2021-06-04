@@ -27,6 +27,12 @@
             "recordname": "recordName",
             "port": 53,
             "ttl": 600
+        },
+        {
+            "serviceType": "Cloudflare",
+            "targetDomain": "example.com",
+            "emailAddress": "user@example.com",
+            "apiKey": "e35f4f8403af3e3964ec8d20e5932eabd3fc3"
         }
     ],
     "notifications": {

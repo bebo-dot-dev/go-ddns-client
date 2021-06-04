@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -13,12 +14,16 @@ import (
 type IDynamicDnsClient interface {
 	// UpdateIPAddresses performs the dynamic dns IP address update operation
 	UpdateIPAddresses(ipv4, ipv6 net.IP) error
-	// LogIPAddressUpdate logs the dynamic dns client IP address update
-	LogIPAddressUpdate()
 }
 
 type Client struct {
 	ServiceConfig *config.ServiceConfiguration
+}
+
+// LogIPAddressUpdate logs the dynamic dns client IP address update
+func (client Client) LogIPAddressUpdate(args ...string) {
+	log.Printf("The %s IP address update for domain %s succeeded. %v",
+		client.ServiceConfig.ServiceType, client.ServiceConfig.TargetDomain, strings.Join(args, ","))
 }
 
 // PerformHttpRequest performs a HTTP request and returns the status code and the response

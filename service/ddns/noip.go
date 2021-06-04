@@ -2,7 +2,6 @@ package ddns
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -18,11 +17,6 @@ sample response:
 nochg 192.0.2.25
 */
 type NoIPClient Client
-
-//String implements the Stringer interface to return the name of this dynamic dns client
-func (client NoIPClient) String() string {
-	return "NoIP dynamic DNS client"
-}
 
 // UpdateIPAddresses performs the dynamic dns IP address update operation
 func (client NoIPClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
@@ -51,12 +45,7 @@ func (client NoIPClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 			ipv4, ipv6, client.ServiceConfig.TargetDomain, responseStr)
 	}
 
-	client.LogIPAddressUpdate()
+	Client(client).LogIPAddressUpdate()
 
 	return nil
-}
-
-// LogIPAddressUpdate logs the dynamic dns client IP address update
-func (client NoIPClient) LogIPAddressUpdate() {
-	log.Printf("The %s IP address update for domain %s succeeded", client, client.ServiceConfig.TargetDomain)
 }

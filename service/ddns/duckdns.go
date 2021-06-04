@@ -2,7 +2,6 @@ package ddns
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 )
@@ -17,11 +16,6 @@ sample response:
 OK
 */
 type DuckDNSClient Client
-
-//String implements the Stringer interface to return the name of this dynamic dns client
-func (client DuckDNSClient) String() string {
-	return "DuckDNS dynamic DNS client"
-}
 
 // UpdateIPAddresses performs the dynamic dns IP address update operation
 func (client DuckDNSClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
@@ -51,12 +45,7 @@ func (client DuckDNSClient) UpdateIPAddresses(ipv4, ipv6 net.IP) error {
 			ipv4, ipv6, client.ServiceConfig.TargetDomain, responseStr)
 	}
 
-	client.LogIPAddressUpdate()
+	Client(client).LogIPAddressUpdate()
 
 	return nil
-}
-
-// LogIPAddressUpdate logs the dynamic dns client IP address update
-func (client DuckDNSClient) LogIPAddressUpdate() {
-	log.Printf("The %s IP address update for domain %s succeeded", client, client.ServiceConfig.TargetDomain)
 }

@@ -41,6 +41,7 @@ type ServiceConfiguration struct {
 	Username     string `json:"username,omitempty"`
 	Password     string `json:"password,omitempty"`
 	Token        string `json:"token,omitempty"`
+	EmailAddress string `json:"emailAddress,omitempty"`
 	APIKey       string `json:"apikey,omitempty"`
 	APISecret    string `json:"apisecret,omitempty"`
 	RecordName   string `json:"recordname,omitempty"`

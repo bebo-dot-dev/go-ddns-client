@@ -113,6 +113,8 @@ func getDDNSClient(serviceConfig *config.ServiceConfiguration) ddns.IDynamicDnsC
 		return ddns.NamecheapClient{ServiceConfig: serviceConfig}
 	case "NoIP":
 		return ddns.NoIPClient{ServiceConfig: serviceConfig}
+	case "Cloudflare":
+		return ddns.CloudFlareClient{ServiceConfig: serviceConfig}
 	default:
 		return nil
 	}

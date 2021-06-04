@@ -15,6 +15,7 @@ A Go dynamic DNS client
 * [GoDaddy](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/godaddy.go)
 * [Namecheap](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/namecheap.go)
 * [NoIP](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/noip.go)
+* [Cloudflare](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/ddns/cloudflare.go)
 ### Supported notification services:
 * [Email (SSL and TLS)](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/notifications/email.go)
 * [Sipgate IO SMS](https://github.com/bebo-dot-dev/go-ddns-client/blob/main/service/notifications/sipgate.go)
